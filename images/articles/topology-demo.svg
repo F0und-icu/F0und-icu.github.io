@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Muted network topology study</title>
+  <desc id="desc">An editorial abstract network topology diagram with warm paper, charcoal lines, and clay highlights.</desc>
+  <defs>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.13"/>
+      </feComponentTransfer>
+    </filter>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F7F3F0"/>
+      <stop offset="0.55" stop-color="#DBD0C5"/>
+      <stop offset="1" stop-color="#C39A7A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#paper)"/>
+  <rect width="1600" height="900" filter="url(#grain)" opacity="0.55"/>
+  <g opacity="0.2" stroke="#1F1D1B" stroke-width="1">
+    <path d="M160 160h1280M160 280h1280M160 400h1280M160 520h1280M160 640h1280M160 760h1280"/>
+    <path d="M220 100v700M420 100v700M620 100v700M820 100v700M1020 100v700M1220 100v700M1420 100v700"/>
+  </g>
+  <g fill="none" stroke="#885E43" stroke-width="2" opacity="0.64">
+    <path d="M278 620C430 420 562 470 680 344S910 190 1120 266s250 250 322 390"/>
+    <path d="M324 290c170 50 228 228 388 262s310-114 484-38"/>
+    <path d="M496 724c66-142 170-240 312-246s272 60 408-112"/>
+  </g>
+  <g fill="#F7F3F0" stroke="#885E43" stroke-width="3">
+    <circle cx="278" cy="620" r="16"/>
+    <circle cx="496" cy="724" r="11"/>
+    <circle cx="680" cy="344" r="18"/>
+    <circle cx="808" cy="478" r="12"/>
+    <circle cx="1120" cy="266" r="20"/>
+    <circle cx="1216" cy="366" r="12"/>
+    <circle cx="1442" cy="656" r="15"/>
+  </g>
+  <g font-family="Inter, Helvetica, Arial, sans-serif" font-size="20" letter-spacing="5" fill="#1F1D1B" opacity="0.62">
+    <text x="132" y="116">EDGE SURFACE / ROUTING CLUSTERS</text>
+    <text x="1010" y="810">TOPOLOGY STUDY 04</text>
+  </g>
+</svg>
